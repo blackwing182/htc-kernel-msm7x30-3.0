@@ -85,18 +85,11 @@ static struct gpio_event_platform_data saga_keypad_data = {
 static struct platform_device saga_keypad_input_device = {
 	.name = GPIO_EVENT_DEV_NAME,
 	.id = 0,
-	.dev		= {
+	.dev = {
 		.platform_data	= &saga_keypad_data,
 	},
 };
-/*
-static int saga_reset_keys_up[] = {
-	KEY_VOLUMEUP,
-	0
-};
-*/
 static struct keyreset_platform_data saga_reset_keys_pdata = {
-	/*.keys_up = saga_reset_keys_up,*/
 	.keys_down = {
 		KEY_POWER,
 		KEY_VOLUMEDOWN,
