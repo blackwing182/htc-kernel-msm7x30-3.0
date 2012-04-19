@@ -1,4 +1,4 @@
-/* linux/arch/arm/mach-msm/board-primou-keypad.c
+/* linux/arch/arm/mach-msm/board-saga-keypad.c
  *
  * Copyright (C) 2010-2011 HTC Corporation.
  *
@@ -21,41 +21,41 @@
 #include <linux/gpio.h>
 #include <mach/gpio.h>
 
-#include "board-primou.h"
+#include "board-saga.h"
 #include "proc_comm.h"
 #include <linux/mfd/pmic8058.h>
 
 static char *keycaps = "--qwerty";
 #undef MODULE_PARAM_PREFIX
-#define MODULE_PARAM_PREFIX "board_primou."
+#define MODULE_PARAM_PREFIX "board_saga."
 module_param_named(keycaps, keycaps, charp, 0);
 
-static struct gpio_event_direct_entry primou_keypad_input_map[] = {
+static struct gpio_event_direct_entry saga_keypad_input_map[] = {
 	{
-		.gpio = PRIMOU_GPIO_KEYPAD_POWER_KEY,
+		.gpio = SAGA_GPIO_KEYPAD_POWER_KEY,
 		.code = KEY_POWER,
 	},
 	{
-		.gpio = PM8058_GPIO_PM_TO_SYS(PRIMOU_VOL_UP),
+		.gpio = PM8058_GPIO_PM_TO_SYS(SAGA_VOL_UP),
 		.code = KEY_VOLUMEUP,
 	},
 	{
-		.gpio = PM8058_GPIO_PM_TO_SYS(PRIMOU_VOL_DN),
+		.gpio = PM8058_GPIO_PM_TO_SYS(SAGA_VOL_DN),
 		.code = KEY_VOLUMEDOWN,
 	},
 };
 
 uint32_t inputs_gpio_table[] = {
-	PCOM_GPIO_CFG(PRIMOU_GPIO_KEYPAD_POWER_KEY, 0, GPIO_INPUT,
+	PCOM_GPIO_CFG(SAGA_GPIO_KEYPAD_POWER_KEY, 0, GPIO_INPUT,
 		      GPIO_PULL_UP, GPIO_4MA),
 };
 
-static void primou_setup_input_gpio(void)
+static void saga_setup_input_gpio(void)
 {
 	gpio_tlmm_config(inputs_gpio_table[0], GPIO_CFG_ENABLE);
 }
 
-static struct gpio_event_input_info primou_keypad_input_info = {
+static struct gpio_event_input_info saga_keypad_input_info = {
 	.info.func = gpio_event_input_func,
 	.flags = GPIOEDF_PRINT_KEYS,
 	.type = EV_KEY,
@@ -64,39 +64,39 @@ static struct gpio_event_input_info primou_keypad_input_info = {
 # else
 	.debounce_time.tv64 = 8 * NSEC_PER_MSEC,
 # endif
-	.keymap = primou_keypad_input_map,
-	.keymap_size = ARRAY_SIZE(primou_keypad_input_map),
-	.setup_input_gpio = primou_setup_input_gpio,
+	.keymap = saga_keypad_input_map,
+	.keymap_size = ARRAY_SIZE(saga_keypad_input_map),
+	.setup_input_gpio = saga_setup_input_gpio,
 };
 
-static struct gpio_event_info *primou_keypad_info[] = {
-	&primou_keypad_input_info.info,
+static struct gpio_event_info *saga_keypad_info[] = {
+	&saga_keypad_input_info.info,
 };
 
-static struct gpio_event_platform_data primou_keypad_data = {
+static struct gpio_event_platform_data saga_keypad_data = {
 	.names = {
-		"primou-keypad",
+		"saga-keypad",
 		NULL,
 	},
-	.info = primou_keypad_info,
-	.info_count = ARRAY_SIZE(primou_keypad_info),
+	.info = saga_keypad_info,
+	.info_count = ARRAY_SIZE(saga_keypad_info),
 };
 
-static struct platform_device primou_keypad_input_device = {
+static struct platform_device saga_keypad_input_device = {
 	.name = GPIO_EVENT_DEV_NAME,
 	.id = 0,
 	.dev		= {
-		.platform_data	= &primou_keypad_data,
+		.platform_data	= &saga_keypad_data,
 	},
 };
 /*
-static int primou_reset_keys_up[] = {
+static int saga_reset_keys_up[] = {
 	KEY_VOLUMEUP,
 	0
 };
 */
-static struct keyreset_platform_data primou_reset_keys_pdata = {
-	/*.keys_up = primou_reset_keys_up,*/
+static struct keyreset_platform_data saga_reset_keys_pdata = {
+	/*.keys_up = saga_reset_keys_up,*/
 	.keys_down = {
 		KEY_POWER,
 		KEY_VOLUMEDOWN,
@@ -105,17 +105,17 @@ static struct keyreset_platform_data primou_reset_keys_pdata = {
 	},
 };
 
-struct platform_device primou_reset_keys_device = {
+struct platform_device saga_reset_keys_device = {
 	.name = KEYRESET_NAME,
-	.dev.platform_data = &primou_reset_keys_pdata,
+	.dev.platform_data = &saga_reset_keys_pdata,
 };
 
-int __init primou_init_keypad(void)
+int __init saga_init_keypad(void)
 {
 	printk(KERN_DEBUG "%s\n", __func__);
 
-	if (platform_device_register(&primou_reset_keys_device))
+	if (platform_device_register(&saga_reset_keys_device))
 		printk(KERN_WARNING "%s: register reset key fail\n", __func__);
 
-	return platform_device_register(&primou_keypad_input_device);
+	return platform_device_register(&saga_keypad_input_device);
 }

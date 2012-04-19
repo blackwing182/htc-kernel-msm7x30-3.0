@@ -1,4 +1,4 @@
-/* linux/arch/arm/mach-msm/board-primou-panel.c
+/* linux/arch/arm/mach-msm/board-saga-panel.c
  *
  * Copyright (C) 2008 HTC Corporation.
  * Author: Jay Tu <jay_tu@htc.com>
@@ -32,7 +32,7 @@
 #include <mach/panel_id.h>
 #include <mach/debug_display.h>
 
-#include "../board-primou.h"
+#include "../board-saga.h"
 #include "../devices.h"
 #include "../proc_comm.h"
 
@@ -71,7 +71,7 @@ enum led_brightness brightness_value = DEFAULT_BRIGHTNESS;
 extern unsigned long msm_fb_base;
 
 static int
-primou_shrink_pwm(int brightness, int user_def,
+saga_shrink_pwm(int brightness, int user_def,
 		int user_min, int user_max, int panel_def,
 		int panel_min, int panel_max)
 {
@@ -97,7 +97,7 @@ primou_shrink_pwm(int brightness, int user_def,
 }
 
 static void
-primou_set_brightness(struct led_classdev *led_cdev,
+saga_set_brightness(struct led_classdev *led_cdev,
 				enum led_brightness val)
 {
 	static int enable_fade_on = 1;
@@ -107,7 +107,7 @@ primou_set_brightness(struct led_classdev *led_cdev,
 	if (test_bit(GATE_ON, &cabc.status) == 0)
 		return;
 
-	shrink_br = primou_shrink_pwm(val, PWM_USER_DEF,
+	shrink_br = saga_shrink_pwm(val, PWM_USER_DEF,
 				PWM_USER_MIN, PWM_USER_MAX, PWM_NOVATEK_DEF,
 				PWM_NOVATEK_MIN, PWM_NOVATEK_MAX);
 
@@ -140,14 +140,14 @@ primou_set_brightness(struct led_classdev *led_cdev,
 }
 
 static enum led_brightness
-primou_get_brightness(struct led_classdev *led_cdev)
+saga_get_brightness(struct led_classdev *led_cdev)
 {
 
 	return brightness_value;
 }
 
 static void
-primou_backlight_switch(int on)
+saga_backlight_switch(int on)
 {
 	enum led_brightness val;
 
@@ -159,7 +159,7 @@ primou_backlight_switch(int on)
 		If the physical layer is not ready, we should not count on it*/
 		if (val == 0)
 			val = brightness_value;
-		primou_set_brightness(&cabc.lcd_backlight, val);
+		saga_set_brightness(&cabc.lcd_backlight, val);
 	} else {
 		clear_bit(GATE_ON, &cabc.status);
 		cabc.last_shrink_br = 0;
@@ -167,7 +167,7 @@ primou_backlight_switch(int on)
 }
 
 static int
-primou_ce_switch(int on)
+saga_ce_switch(int on)
 {
 	struct msm_mddi_client_data *client = cabc.client_data;
 
@@ -214,7 +214,7 @@ ce_switch_store(struct device *dev, struct device_attribute *attr,
 		goto err_out;
 	}
 
-	if (primou_ce_switch(!!res))
+	if (saga_ce_switch(!!res))
 		count = -EIO;
 
 err_out:
@@ -222,7 +222,7 @@ err_out:
 }
 
 static int
-primou_backlight_probe(struct platform_device *pdev)
+saga_backlight_probe(struct platform_device *pdev)
 {
 	int err = -EIO;
 	PR_DISP_DEBUG("%s\n", __func__);
@@ -231,8 +231,8 @@ primou_backlight_probe(struct platform_device *pdev)
 	cabc.last_shrink_br = 0;
 	cabc.client_data = pdev->dev.platform_data;
 	cabc.lcd_backlight.name = "lcd-backlight";
-	cabc.lcd_backlight.brightness_set = primou_set_brightness;
-	cabc.lcd_backlight.brightness_get = primou_get_brightness;
+	cabc.lcd_backlight.brightness_set = saga_set_brightness;
+	cabc.lcd_backlight.brightness_get = saga_get_brightness;
 	err = led_classdev_register(&pdev->dev, &cabc.lcd_backlight);
 	if (err)
 		goto err_register_lcd_bl;
@@ -790,7 +790,7 @@ static struct nov_regs sony_init_seq[] = {
 };
 
 static int
-primou_mddi_init(struct msm_mddi_bridge_platform_data *bridge_data,
+saga_mddi_init(struct msm_mddi_bridge_platform_data *bridge_data,
 		     struct msm_mddi_client_data *client_data)
 {
 	int i = 0, array_size = 0;
@@ -801,11 +801,11 @@ primou_mddi_init(struct msm_mddi_bridge_platform_data *bridge_data,
 	client_data->auto_hibernate(client_data, 0);
 
 	switch (panel_type) {
-	case PANEL_ID_PRIMO_SONY:
+	case PANEL_ID_SAGA_SONY:
 		init_seq = sony_init_seq;
 		array_size = ARRAY_SIZE(sony_init_seq);
 		break;
-	case PANEL_ID_PRIMO_LG:
+	case PANEL_ID_SAGA_LG:
 	default:
 		init_seq = pro_lgd_init_seq;
 		array_size = ARRAY_SIZE(pro_lgd_init_seq);
@@ -831,7 +831,7 @@ primou_mddi_init(struct msm_mddi_bridge_platform_data *bridge_data,
 }
 
 static int
-primou_mddi_uninit(struct msm_mddi_bridge_platform_data *bridge_data,
+saga_mddi_uninit(struct msm_mddi_bridge_platform_data *bridge_data,
 			struct msm_mddi_client_data *client_data)
 {
 	PR_DISP_DEBUG("%s\n", __func__);
@@ -839,21 +839,21 @@ primou_mddi_uninit(struct msm_mddi_bridge_platform_data *bridge_data,
 }
 
 static int
-primou_panel_blank(struct msm_mddi_bridge_platform_data *bridge_data,
+saga_panel_blank(struct msm_mddi_bridge_platform_data *bridge_data,
 			struct msm_mddi_client_data *client_data)
 {
 	PR_DISP_DEBUG("%s\n", __func__);
 
 	client_data->auto_hibernate(client_data, 0);
 
-	if (panel_type == PANEL_ID_PRIMO_SONY) {
+	if (panel_type == PANEL_ID_SAGA_SONY) {
 		client_data->remote_write(client_data, 0x0, 0x5300);
-		primou_backlight_switch(LED_OFF);
+		saga_backlight_switch(LED_OFF);
 		client_data->remote_write(client_data, 0, 0x2800);
 		client_data->remote_write(client_data, 0, 0x1000);
 	} else {
 		client_data->remote_write(client_data, 0x0, 0x5300);
-		primou_backlight_switch(LED_OFF);
+		saga_backlight_switch(LED_OFF);
 		client_data->remote_write(client_data, 0, 0x2800);
 		hr_msleep(10);
 		client_data->remote_write(client_data, 0, 0x1000);
@@ -863,29 +863,29 @@ primou_panel_blank(struct msm_mddi_bridge_platform_data *bridge_data,
 }
 
 static int
-primou_panel_unblank(struct msm_mddi_bridge_platform_data *bridge_data,
+saga_panel_unblank(struct msm_mddi_bridge_platform_data *bridge_data,
 			struct msm_mddi_client_data *client_data)
 {
 	PR_DISP_DEBUG("%s\n", __func__);
 	client_data->auto_hibernate(client_data, 0);
 	/* HTC, Add 50 ms delay for stability of driver IC at high temperature */
 	hr_msleep(50);
-	if (panel_type == PANEL_ID_PRIMO_SONY) {
+	if (panel_type == PANEL_ID_SAGA_SONY) {
 		client_data->remote_write(client_data, 0x00, 0x3600);
 		client_data->remote_write(client_data, 0x24, 0x5300);
 	} else {
 		client_data->remote_write(client_data, 0x24, 0x5300);
 	}
-	primou_backlight_switch(LED_FULL);
+	saga_backlight_switch(LED_FULL);
 	client_data->auto_hibernate(client_data, 1);
 	return 0;
 }
 
 static struct msm_mddi_bridge_platform_data novatec_client_data = {
-	.init = primou_mddi_init,
-	.uninit = primou_mddi_uninit,
-	.blank = primou_panel_blank,
-	.unblank = primou_panel_unblank,
+	.init = saga_mddi_init,
+	.uninit = saga_mddi_uninit,
+	.blank = saga_panel_blank,
+	.unblank = saga_panel_unblank,
 	.fb_data = {
 		.xres = 480,
 		.yres = 800,
@@ -910,59 +910,59 @@ mddi_power(struct msm_mddi_client_data *client_data, int on)
 		if (axi_clk)
 			clk_set_rate(axi_clk, 192000000);
 
-		config = PCOM_GPIO_CFG(PRIMOU_MDDI_TE, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_2MA);
+		config = PCOM_GPIO_CFG(SAGA_MDDI_TE, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
-		config = PCOM_GPIO_CFG(PRIMOU_LCD_ID0, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_2MA);
+		config = PCOM_GPIO_CFG(SAGA_LCD_ID0, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 
-		if (panel_type == PANEL_ID_PRIMO_SONY) {
-			config = PCOM_GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_2MA);
+		if (panel_type == PANEL_ID_SAGA_SONY) {
+			config = PCOM_GPIO_CFG(SAGA_LCD_ID1, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_2MA);
 			rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 			vreg_enable(V_LCMIO_1V8);
 			hr_msleep(3);
 			vreg_enable(V_LCMIO_2V8);
 			hr_msleep(5);
 
-			gpio_set_value(PRIMOU_LCD_RSTz, 1);
+			gpio_set_value(SAGA_LCD_RSTz, 1);
 			hr_msleep(1);
-			gpio_set_value(PRIMOU_LCD_RSTz, 0);
+			gpio_set_value(SAGA_LCD_RSTz, 0);
 			hr_msleep(1);
-			gpio_set_value(PRIMOU_LCD_RSTz, 1);
+			gpio_set_value(SAGA_LCD_RSTz, 1);
 			hr_msleep(15);
 		} else {
-			config = PCOM_GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_2MA);
+			config = PCOM_GPIO_CFG(SAGA_LCD_ID1, 0, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_2MA);
 			rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 			vreg_enable(V_LCMIO_1V8);
 			hr_msleep(3);
 			vreg_enable(V_LCMIO_2V8);
 			hr_msleep(5);
 
-			gpio_set_value(PRIMOU_LCD_RSTz, 1);
+			gpio_set_value(SAGA_LCD_RSTz, 1);
 			hr_msleep(1);
-			gpio_set_value(PRIMOU_LCD_RSTz, 0);
+			gpio_set_value(SAGA_LCD_RSTz, 0);
 			hr_msleep(1);
-			gpio_set_value(PRIMOU_LCD_RSTz, 1);
+			gpio_set_value(SAGA_LCD_RSTz, 1);
 			hr_msleep(20);
 		}
 	} else {
-		if (panel_type == PANEL_ID_PRIMO_SONY) {
+		if (panel_type == PANEL_ID_SAGA_SONY) {
 			hr_msleep(80);
-			gpio_set_value(PRIMOU_LCD_RSTz, 0);
+			gpio_set_value(SAGA_LCD_RSTz, 0);
 			hr_msleep(10);
 			vreg_disable(V_LCMIO_1V8);
 			vreg_disable(V_LCMIO_2V8);
 		} else {
 			hr_msleep(20);
-			gpio_set_value(PRIMOU_LCD_RSTz, 0);
+			gpio_set_value(SAGA_LCD_RSTz, 0);
 			vreg_disable(V_LCMIO_2V8);
 			vreg_disable(V_LCMIO_1V8);
 		}
 
-		config = PCOM_GPIO_CFG(PRIMOU_MDDI_TE, 0, GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_2MA);
+		config = PCOM_GPIO_CFG(SAGA_MDDI_TE, 0, GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
-		config = PCOM_GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_2MA);
+		config = PCOM_GPIO_CFG(SAGA_LCD_ID1, 0, GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
-		config = PCOM_GPIO_CFG(PRIMOU_LCD_ID0, 0, GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_2MA);
+		config = PCOM_GPIO_CFG(SAGA_LCD_ID0, 0, GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 	}
 }
@@ -991,8 +991,8 @@ static struct msm_mddi_platform_data mddi_pdata = {
 	},
 };
 
-static struct platform_driver primou_backlight_driver = {
-	.probe = primou_backlight_probe,
+static struct platform_driver saga_backlight_driver = {
+	.probe = saga_backlight_probe,
 	.driver = {
 		.name = "nov_cabc",
 		.owner = THIS_MODULE,
@@ -1023,7 +1023,7 @@ static struct msm_mdp_platform_data mdp_pdata_sony = {
 #endif
 };
 
-int __init primou_init_panel(void)
+int __init saga_init_panel(void)
 {
 	int rc;
 
@@ -1049,7 +1049,7 @@ int __init primou_init_panel(void)
 	resources_msm_fb[0].start = msm_fb_base;
 	resources_msm_fb[0].end = msm_fb_base + MSM_FB_SIZE - 1;
 
-	if (panel_type == PANEL_ID_PRIMO_SONY)
+	if (panel_type == PANEL_ID_SAGA_SONY)
 		msm_device_mdp.dev.platform_data = &mdp_pdata_sony;
 	else
 		msm_device_mdp.dev.platform_data = &mdp_pdata;
@@ -1072,7 +1072,7 @@ int __init primou_init_panel(void)
 	if (rc)
 		return rc;
 
-	rc = platform_driver_register(&primou_backlight_driver);
+	rc = platform_driver_register(&saga_backlight_driver);
 	if (rc)
 		return rc;
 

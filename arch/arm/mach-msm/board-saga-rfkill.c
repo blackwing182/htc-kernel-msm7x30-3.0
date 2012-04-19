@@ -21,60 +21,60 @@
 #include <linux/gpio.h>
 #include <asm/mach-types.h>
 
-#include "board-primou.h"
+#include "board-saga.h"
 
 static struct rfkill *bt_rfk;
 static const char bt_name[] = "bcm4330";
 
 /* bt on configuration */
-static uint32_t primou_bt_on_table[] = {
+static uint32_t saga_bt_on_table[] = {
 
 	/* BT_RTS */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_RTS,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_RTS,
 				1,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_8MA),
 	/* BT_CTS */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_CTS,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_CTS,
 				1,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_8MA),
 	/* BT_RX */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_RX,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_RX,
 				1,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_8MA),
 	/* BT_TX */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_TX,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_TX,
 				1,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_8MA),
 
 	/* BT_HOST_WAKE */
-	GPIO_CFG(PRIMOU_GPIO_BT_HOST_WAKE,
+	GPIO_CFG(SAGA_GPIO_BT_HOST_WAKE,
 				0,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_4MA),
 	/* BT_CHIP_WAKE */
-	GPIO_CFG(PRIMOU_GPIO_BT_WAKE,
+	GPIO_CFG(SAGA_GPIO_BT_WAKE,
 				0,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_4MA),
 
 	/* BT_RESET_N */
-	GPIO_CFG(PRIMOU_GPIO_BT_RESET_N,
+	GPIO_CFG(SAGA_GPIO_BT_RESET_N,
 				0,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_4MA),
 	/* BT_SHUTDOWN_N */
-	GPIO_CFG(PRIMOU_GPIO_BT_SHUTDOWN_N,
+	GPIO_CFG(SAGA_GPIO_BT_SHUTDOWN_N,
 				0,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
@@ -82,54 +82,54 @@ static uint32_t primou_bt_on_table[] = {
 };
 
 /* bt off configuration */
-static uint32_t primou_bt_off_table[] = {
+static uint32_t saga_bt_off_table[] = {
 
 	/* BT_RTS */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_RTS,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_RTS,
 				0,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_8MA),
 	/* BT_CTS */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_CTS,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_CTS,
 				0,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_8MA),
 	/* BT_RX */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_RX,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_RX,
 				0,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_8MA),
 	/* BT_TX */
-	GPIO_CFG(PRIMOU_GPIO_BT_UART1_TX,
+	GPIO_CFG(SAGA_GPIO_BT_UART1_TX,
 				0,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_PULL_UP,
 				GPIO_CFG_8MA),
 
 	/* BT_RESET_N */
-	GPIO_CFG(PRIMOU_GPIO_BT_RESET_N,
+	GPIO_CFG(SAGA_GPIO_BT_RESET_N,
 				0,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_4MA),
 	/* BT_SHUTDOWN_N */
-	GPIO_CFG(PRIMOU_GPIO_BT_SHUTDOWN_N,
+	GPIO_CFG(SAGA_GPIO_BT_SHUTDOWN_N,
 				0,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_4MA),
 
 	/* BT_HOST_WAKE */
-	GPIO_CFG(PRIMOU_GPIO_BT_HOST_WAKE,
+	GPIO_CFG(SAGA_GPIO_BT_HOST_WAKE,
 				0,
 				GPIO_CFG_INPUT,
 				GPIO_CFG_NO_PULL,
 				GPIO_CFG_4MA),
 	/* BT_CHIP_WAKE */
-	GPIO_CFG(PRIMOU_GPIO_BT_WAKE,
+	GPIO_CFG(SAGA_GPIO_BT_WAKE,
 				0,
 				GPIO_CFG_OUTPUT,
 				GPIO_CFG_NO_PULL,
@@ -149,55 +149,55 @@ static void config_bt_table(uint32_t *table, int len)
 	}
 }
 
-static void primou_config_bt_on(void)
+static void saga_config_bt_on(void)
 {
 	printk(KERN_INFO "[BT]== R ON ==\n");
 
 	/* set bt on configuration*/
-	config_bt_table(primou_bt_on_table,
-				ARRAY_SIZE(primou_bt_on_table));
+	config_bt_table(saga_bt_on_table,
+				ARRAY_SIZE(saga_bt_on_table));
 	mdelay(2);
 
 	/* BT_RESET_N */
-	gpio_set_value(PRIMOU_GPIO_BT_RESET_N, 0);
+	gpio_set_value(SAGA_GPIO_BT_RESET_N, 0);
 	mdelay(1);
 
 	/* BT_SHUTDOWN_N */
-	gpio_set_value(PRIMOU_GPIO_BT_SHUTDOWN_N, 0);
+	gpio_set_value(SAGA_GPIO_BT_SHUTDOWN_N, 0);
 	mdelay(5);
 
 	/* BT_SHUTDOWN_N */
-	gpio_set_value(PRIMOU_GPIO_BT_SHUTDOWN_N, 1);
+	gpio_set_value(SAGA_GPIO_BT_SHUTDOWN_N, 1);
 	mdelay(1);
 
 	/* BT_RESET_N */
-	gpio_set_value(PRIMOU_GPIO_BT_RESET_N, 1);
+	gpio_set_value(SAGA_GPIO_BT_RESET_N, 1);
 	mdelay(2);
 
 }
 
-static void primou_config_bt_off(void)
+static void saga_config_bt_off(void)
 {
 	/* BT_RESET_N */
-	gpio_set_value(PRIMOU_GPIO_BT_RESET_N, 0);
+	gpio_set_value(SAGA_GPIO_BT_RESET_N, 0);
 	mdelay(1);
 
 	/* BT_SHUTDOWN_N */
-	gpio_set_value(PRIMOU_GPIO_BT_SHUTDOWN_N, 0);
+	gpio_set_value(SAGA_GPIO_BT_SHUTDOWN_N, 0);
 	mdelay(1);
 
 	/* set bt off configuration*/
-	config_bt_table(primou_bt_off_table,
-				ARRAY_SIZE(primou_bt_off_table));
+	config_bt_table(saga_bt_off_table,
+				ARRAY_SIZE(saga_bt_off_table));
 	mdelay(2);
 
 	/* BT_RTS */
-	gpio_set_value(PRIMOU_GPIO_BT_UART1_RTS, 1);
+	gpio_set_value(SAGA_GPIO_BT_UART1_RTS, 1);
 
 	/* BT_CTS */
 
 	/* BT_TX */
-	gpio_set_value(PRIMOU_GPIO_BT_UART1_TX, 1);
+	gpio_set_value(SAGA_GPIO_BT_UART1_TX, 1);
 
 	/* BT_RX */
 
@@ -205,7 +205,7 @@ static void primou_config_bt_off(void)
 	/* BT_HOST_WAKE */
 
 	/* BT_CHIP_WAKE */
-	gpio_set_value(PRIMOU_GPIO_BT_WAKE, 0);
+	gpio_set_value(SAGA_GPIO_BT_WAKE, 0);
 
 	printk(KERN_INFO "[BT]== R OFF ==\n");
 }
@@ -213,18 +213,18 @@ static void primou_config_bt_off(void)
 static int bluetooth_set_power(void *data, bool blocked)
 {
 	if (!blocked)
-		primou_config_bt_on();
+		saga_config_bt_on();
 	else
-		primou_config_bt_off();
+		saga_config_bt_off();
 
 	return 0;
 }
 
-static struct rfkill_ops primou_rfkill_ops = {
+static struct rfkill_ops saga_rfkill_ops = {
 	.set_block = bluetooth_set_power,
 };
 
-static int primou_rfkill_probe(struct platform_device *pdev)
+static int saga_rfkill_probe(struct platform_device *pdev)
 {
 	int rc = 0;
 	bool default_state = true;  /* off */
@@ -236,7 +236,7 @@ static int primou_rfkill_probe(struct platform_device *pdev)
 	bluetooth_set_power(NULL, default_state);
 
 	bt_rfk = rfkill_alloc(bt_name, &pdev->dev, RFKILL_TYPE_BLUETOOTH,
-				&primou_rfkill_ops, NULL);
+				&saga_rfkill_ops, NULL);
 	if (!bt_rfk) {
 		rc = -ENOMEM;
 		goto err_rfkill_alloc;
@@ -258,37 +258,37 @@ err_rfkill_alloc:
 	return rc;
 }
 
-static int primou_rfkill_remove(struct platform_device *dev)
+static int saga_rfkill_remove(struct platform_device *dev)
 {
 	rfkill_unregister(bt_rfk);
 	rfkill_destroy(bt_rfk);
 	return 0;
 }
 
-static struct platform_driver primou_rfkill_driver = {
-	.probe = primou_rfkill_probe,
-	.remove = primou_rfkill_remove,
+static struct platform_driver saga_rfkill_driver = {
+	.probe = saga_rfkill_probe,
+	.remove = saga_rfkill_remove,
 	.driver = {
-		.name = "primou_rfkill",
+		.name = "saga_rfkill",
 		.owner = THIS_MODULE,
 	},
 };
 
-static int __init primou_rfkill_init(void)
+static int __init saga_rfkill_init(void)
 {
-	if (!machine_is_primou())
+	if (!machine_is_saga())
 		return 0;
 
-	return platform_driver_register(&primou_rfkill_driver);
+	return platform_driver_register(&saga_rfkill_driver);
 }
 
-static void __exit primou_rfkill_exit(void)
+static void __exit saga_rfkill_exit(void)
 {
-	platform_driver_unregister(&primou_rfkill_driver);
+	platform_driver_unregister(&saga_rfkill_driver);
 }
 
-module_init(primou_rfkill_init);
-module_exit(primou_rfkill_exit);
-MODULE_DESCRIPTION("primou rfkill");
+module_init(saga_rfkill_init);
+module_exit(saga_rfkill_exit);
+MODULE_DESCRIPTION("saga rfkill");
 MODULE_AUTHOR("htc_ssdbt <htc_ssdbt@htc.com>");
 MODULE_LICENSE("GPL");

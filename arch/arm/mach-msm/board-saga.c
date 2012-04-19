@@ -100,7 +100,7 @@
 #include <mach/qdsp5v2_2x/audio_dev_ctl.h>
 #include <mach/sdio_al.h>
 #include "smd_private.h"
-#include "board-primou.h"
+#include "board-saga.h"
 #include <mach/tpa2051d3.h>
 #include "board-msm7x30-regulator.h"
 #include <mach/board_htc.h>
@@ -143,12 +143,12 @@ struct pm8xxx_gpio_init_info {
 	struct pm_gpio			config;
 };
 
-int __init primou_init_panel(void);
+int __init saga_init_panel(void);
 
 static unsigned int engineerid;
 unsigned long msm_fb_base;
 
-unsigned int primou_get_engineerid(void)
+unsigned int saga_get_engineerid(void)
 {
 	return engineerid;
 }
@@ -180,23 +180,23 @@ static void config_gpio_table(uint32_t *table, int len)
 	}
 }
 
-static int primou_ts_power(int on)
+static int saga_ts_power(int on)
 {
 	pr_info("%s: power %d\n", __func__, on);
 
 	if (on == 1) {
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(PRIMOU_TP_RSTz), 1);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_TP_RSTz), 1);
 	} else if (on == 2) {
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(PRIMOU_TP_RSTz), 0);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_TP_RSTz), 0);
 		msleep(5);
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(PRIMOU_TP_RSTz), 1);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_TP_RSTz), 1);
 		msleep(40);
 	}
 
 	return 0;
 }
 
-struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
+struct atmel_i2c_platform_data saga_ts_atmel_data[] = {
 	{
 		.version = 0x0011,
 		.build = 0xAA,
@@ -209,8 +209,8 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
 		.abs_width_max = 20,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
-		.power = primou_ts_power,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
+		.power = saga_ts_power,
 		.unlock_attr = 1,
 		.config_T6 = {0, 0, 0, 0, 0, 0},
 		.config_T7 = {15, 10, 50},
@@ -245,8 +245,8 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
 		.abs_width_max = 20,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
-		.power = primou_ts_power,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
+		.power = saga_ts_power,
 		.unlock_attr = 1,
 		.config_T6 = {0, 0, 0, 0, 0, 0},
 		.config_T7 = {15, 10, 50},
@@ -281,8 +281,8 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
 		.abs_width_max = 20,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
-		.power = primou_ts_power,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
+		.power = saga_ts_power,
 		.unlock_attr = 1,
 		.config_T6 = {0, 0, 0, 0, 0, 0},
 		.config_T7 = {15, 10, 50},
@@ -315,8 +315,8 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
 		.abs_width_max = 20,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
-		.power = primou_ts_power,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
+		.power = saga_ts_power,
 		.unlock_attr = 1,
 		.config_T6 = {0, 0, 0, 0, 0, 0},
 		.config_T7 = {15, 10, 50},
@@ -349,8 +349,8 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
 		.abs_width_max = 20,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
-		.power = primou_ts_power,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
+		.power = saga_ts_power,
 		.unlock_attr = 1,
 		.config_T6 = {0, 0, 0, 0, 0, 0},
 		.config_T7 = {15, 8, 50},
@@ -380,8 +380,8 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 		.abs_pressure_max = 255,
 		.abs_width_min = 0,
 		.abs_width_max = 20,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
-		.power = primou_ts_power,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
+		.power = saga_ts_power,
 		.unlock_attr = 1,
 		.config_T6 = {0, 0, 0, 0, 0, 0},
 		.config_T7 = {15, 8, 50},
@@ -401,7 +401,7 @@ struct atmel_i2c_platform_data primou_ts_atmel_data[] = {
 	},
 };
 
-static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* Synatpics sensor */
+static struct synaptics_i2c_rmi_platform_data saga_ts_synaptics_data[] = { /* Synatpics sensor */
 	{
 		.version = 0x3330,
 		.packrat_number = 1100754,
@@ -409,7 +409,7 @@ static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* 
 		.abs_x_max = 1090,
 		.abs_y_min = 0,
 		.abs_y_max = 1750,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
 		.default_config = 3,
 		.large_obj_check = 1,
 		.customer_register = {0xF9, 0x64, 0x63, 0x32},
@@ -454,7 +454,7 @@ static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* 
 		.abs_x_max = 1090,
 		.abs_y_min = 0,
 		.abs_y_max = 1750,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
 		.default_config = 3,
 		.large_obj_check = 1,
 		.config = { 0x45, 0x30, 0x30, 0x39, 0x00, 0x3F, 0x03, 0x1E,
@@ -497,7 +497,7 @@ static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* 
 		.abs_x_max = 1090,
 		.abs_y_min = 0,
 		.abs_y_max = 1750,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
 		.default_config = 3,
 		.large_obj_check = 1,
 		.config = {0x30, 0x30, 0x33, 0x30, 0x00, 0x3F, 0x03, 0x1E,
@@ -539,7 +539,7 @@ static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* 
 		.abs_x_max = 1090,
 		.abs_y_min = 0,
 		.abs_y_max = 1750,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
 		.default_config = 1,
 		.config = {0x50, 0x52, 0x4F, 0x00, 0x84, 0x0F, 0x03, 0x1E,
 			0x05, 0x20, 0xB1, 0x00, 0x0B, 0x19, 0x19, 0x00,
@@ -575,7 +575,7 @@ static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* 
 		.abs_y_min = 0,
 		.abs_y_max = 1770,
 		.flags = SYNAPTICS_FLIP_Y,
-		.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
+		.gpio_irq = SAGA_GPIO_TP_ATT_N,
 		.default_config = 2,
 		.config = {0x30, 0x30, 0x30, 0x31, 0x84, 0x0F, 0x03, 0x1E,
 			0x05, 0x00, 0x0B, 0x19, 0x19, 0x00, 0x00, 0xE8,
@@ -604,9 +604,9 @@ static struct synaptics_i2c_rmi_platform_data primou_ts_synaptics_data[] = { /* 
 static void himax_ts_reset(void)
 {
 	printk(KERN_INFO "%s():\n", __func__);
-	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(PRIMOU_TP_RSTz), 0);
+	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_TP_RSTz), 0);
 	mdelay(10);
-	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(PRIMOU_TP_RSTz), 1);
+	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_TP_RSTz), 1);
 }
 
 static int himax_ts_loadSensorConfig(struct i2c_client *client, struct himax_i2c_platform_data *pdata, struct himax_config_init_api *i2c_api);
@@ -776,13 +776,13 @@ struct himax_i2c_platform_data himax_ts_data = {
 	.abs_pressure_max = 200,
 	.abs_width_min = 0,
 	.abs_width_max = 200,
-	.gpio_irq = PRIMOU_GPIO_TP_ATT_N,
+	.gpio_irq = SAGA_GPIO_TP_ATT_N,
 	.version = 0x00,
 	.tw_id = 0,
 	.event_htc_enable = 0,
 	.cable_config = { 0x90, 0x00},
 	.powerOff3V3 = 0,
-	.power = primou_ts_power,
+	.power = saga_ts_power,
 	.protocol_type = PROTOCOL_TYPE_B,
 	.screenWidth = 480,
 	.screenHeight = 800,
@@ -983,7 +983,7 @@ start:
 	return result;
 }
 
-static ssize_t primou_himax_virtual_keys_show(struct kobject *kobj,
+static ssize_t saga_himax_virtual_keys_show(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -993,7 +993,7 @@ static ssize_t primou_himax_virtual_keys_show(struct kobject *kobj,
 		"\n");
 }
 
-static ssize_t primou_himax_virtual_keys_show_china_mfg(struct kobject *kobj,
+static ssize_t saga_himax_virtual_keys_show_china_mfg(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -1004,7 +1004,7 @@ static ssize_t primou_himax_virtual_keys_show_china_mfg(struct kobject *kobj,
 		"\n");
 }
 
-static ssize_t primou_himax_virtual_keys_show_china(struct kobject *kobj,
+static ssize_t saga_himax_virtual_keys_show_china(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -1015,7 +1015,7 @@ static ssize_t primou_himax_virtual_keys_show_china(struct kobject *kobj,
 		"\n");
 }
 
-static ssize_t primou_atmel_virtual_keys_show(struct kobject *kobj,
+static ssize_t saga_atmel_virtual_keys_show(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -1026,7 +1026,7 @@ static ssize_t primou_atmel_virtual_keys_show(struct kobject *kobj,
 		"\n");
 }
 
-static ssize_t primou_synaptics_virtual_keys_show(struct kobject *kobj,
+static ssize_t saga_synaptics_virtual_keys_show(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -1036,7 +1036,7 @@ static ssize_t primou_synaptics_virtual_keys_show(struct kobject *kobj,
 		"\n");
 }
 
-static ssize_t primou_synaptics_virtual_keys_show_china_mfg(struct kobject *kobj,
+static ssize_t saga_synaptics_virtual_keys_show_china_mfg(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -1047,7 +1047,7 @@ static ssize_t primou_synaptics_virtual_keys_show_china_mfg(struct kobject *kobj
 		"\n");
 }
 
-static ssize_t primou_synaptics_virtual_keys_show_china(struct kobject *kobj,
+static ssize_t saga_synaptics_virtual_keys_show_china(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -1058,39 +1058,39 @@ static ssize_t primou_synaptics_virtual_keys_show_china(struct kobject *kobj,
 		"\n");
 }
 
-static struct kobj_attribute primou_himax_virtual_keys_attr = {
+static struct kobj_attribute saga_himax_virtual_keys_attr = {
 	.attr = {
 		.name = "virtualkeys.himax-touchscreen",
 		.mode = S_IRUGO,
 	},
-	.show = &primou_himax_virtual_keys_show,
+	.show = &saga_himax_virtual_keys_show,
 };
 
-static struct kobj_attribute primou_atmel_virtual_keys_attr = {
+static struct kobj_attribute saga_atmel_virtual_keys_attr = {
 	.attr = {
 		.name = "virtualkeys.atmel-touchscreen",
 		.mode = S_IRUGO,
 	},
-	.show = &primou_atmel_virtual_keys_show,
+	.show = &saga_atmel_virtual_keys_show,
 };
 
-static struct kobj_attribute primou_synaptics_virtual_keys_attr = {
+static struct kobj_attribute saga_synaptics_virtual_keys_attr = {
 	.attr = {
 		.name = "virtualkeys.synaptics-rmi-touchscreen",
 		.mode = S_IRUGO,
 	},
-	.show = &primou_synaptics_virtual_keys_show,
+	.show = &saga_synaptics_virtual_keys_show,
 };
 
-static struct attribute *primou_properties_attrs[] = {
-	&primou_atmel_virtual_keys_attr.attr,
-	&primou_synaptics_virtual_keys_attr.attr,
-	&primou_himax_virtual_keys_attr.attr,
+static struct attribute *saga_properties_attrs[] = {
+	&saga_atmel_virtual_keys_attr.attr,
+	&saga_synaptics_virtual_keys_attr.attr,
+	&saga_himax_virtual_keys_attr.attr,
 	NULL
 };
 
-static struct attribute_group primou_properties_attr_group = {
-	.attrs = primou_properties_attrs,
+static struct attribute_group saga_properties_attr_group = {
+	.attrs = saga_properties_attrs,
 };
 
 
@@ -1153,7 +1153,7 @@ static int capella_cm36282_power(int pwr_device, uint8_t enable)
 static struct cm3629_platform_data cm36282_pdata = {
 	.model = CAPELLA_CM36282,
 	.ps_select = CM3629_PS1_ONLY,
-	.intr = PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_PS_INT_N),
+	.intr = PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_PS_INT_N),
 	.levels = { 3, 5, 7, 75, 132, 2495, 4249, 5012, 5775, 65535},
 	.golden_adc = 0xC0C,
 	.power = capella_cm36282_power,
@@ -1173,30 +1173,30 @@ static struct cm3629_platform_data cm36282_pdata = {
 static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO(ATMEL_MXT224E_NAME, 0x94 >> 1),
-		.platform_data = &primou_ts_atmel_data,
-		.irq = MSM_GPIO_TO_INT(PRIMOU_GPIO_TP_ATT_N)
+		.platform_data = &saga_ts_atmel_data,
+		.irq = MSM_GPIO_TO_INT(SAGA_GPIO_TP_ATT_N)
 	},
 	{
 		I2C_BOARD_INFO(SYNAPTICS_3200_NAME, 0x40 >> 1),
-		.platform_data = &primou_ts_synaptics_data,
-		.irq = MSM_GPIO_TO_INT(PRIMOU_GPIO_TP_ATT_N)
+		.platform_data = &saga_ts_synaptics_data,
+		.irq = MSM_GPIO_TO_INT(SAGA_GPIO_TP_ATT_N)
 	},
 	{
 		I2C_BOARD_INFO(HIMAX8526A_NAME, 0x90>>1),
 		.platform_data  = &himax_ts_data,
-		.irq = MSM_GPIO_TO_INT(PRIMOU_GPIO_TP_ATT_N),
+		.irq = MSM_GPIO_TO_INT(SAGA_GPIO_TP_ATT_N),
 	},
 	{
 		I2C_BOARD_INFO(CM3629_I2C_NAME, 0xC0 >> 1),
 		.platform_data = &cm36282_pdata,
 		.irq = MSM_GPIO_TO_INT(
-		       PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_PS_INT_N))
+		       PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_PS_INT_N))
 	},
 };
 /*
 static struct bma250_platform_data gsensor_platform_data = {
 	.intr = MSM_GPIO_TO_INT(PM8058_GPIO_PM_TO_SYS(
-			PRIMOU_GPIO_GSENSOR_INT)),
+			SAGA_GPIO_GSENSOR_INT)),
 	.chip_layout = 1,
 };
 
@@ -1204,7 +1204,7 @@ static struct i2c_board_info i2c_Sensors_devices[] = {
 	{
 		I2C_BOARD_INFO(BMA250_I2C_NAME, 0x30 >> 1),
 		.platform_data = &gsensor_platform_data,
-		.irq = MSM_GPIO_TO_INT(PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_GSENSOR_INT)),
+		.irq = MSM_GPIO_TO_INT(PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_GSENSOR_INT)),
 	},
 };
 */
@@ -1253,7 +1253,7 @@ static int pm8058_gpios_init(void)
 	};
 */
 	struct pm8xxx_gpio_init_info gpio15 = {
-		PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_FLASH_EN),
+		PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_FLASH_EN),
 		{
 			.direction      = PM_GPIO_DIR_OUT,
 			.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
@@ -1266,7 +1266,7 @@ static int pm8058_gpios_init(void)
 	};
 
 	struct pm8xxx_gpio_init_info gpio18 = {
-		PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_SPK_SD),
+		PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD),
 		{
 			.direction      = PM_GPIO_DIR_OUT,
 			.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
@@ -1279,7 +1279,7 @@ static int pm8058_gpios_init(void)
 	};
 
 	struct pm8xxx_gpio_init_info gpio19 = {
-		PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_AMP_EN),
+		PM8058_GPIO_PM_TO_SYS(SAGA_AUD_AMP_EN),
 		{
 			.direction      = PM_GPIO_DIR_OUT,
 			.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
@@ -1306,7 +1306,7 @@ static int pm8058_gpios_init(void)
 
 #ifdef CONFIG_MMC_MSM_CARD_HW_DETECTION
 	struct pm8xxx_gpio_init_info sdcc_det = {
-		PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_SDMC_CD_N),
+		PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_SDMC_CD_N),
 		{
 			.direction      = PM_GPIO_DIR_IN,
 			.pull           = PM_GPIO_PULL_UP_31P5,
@@ -1317,7 +1317,7 @@ static int pm8058_gpios_init(void)
 	};
 #endif
 	struct pm8xxx_gpio_init_info psensor_gpio = {
-	PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_PS_INT_N),
+	PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_PS_INT_N),
 		{
 			.direction      = PM_GPIO_DIR_IN,
 			.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
@@ -1330,25 +1330,25 @@ static int pm8058_gpios_init(void)
 	};
 	rc = pm8xxx_gpio_config(psensor_gpio.gpio, &psensor_gpio.config);
 	if (rc) {
-		pr_err("%s PRIMOU_GPIO_PS_INT_N config failed\n", __func__);
+		pr_err("%s SAGA_GPIO_PS_INT_N config failed\n", __func__);
 		return rc;
 	} else
-		pr_info("%s [cm3628][PS]PRIMOU_GPIO_PS_INT_N config ok\n", __func__);
+		pr_info("%s [cm3628][PS]SAGA_GPIO_PS_INT_N config ok\n", __func__);
 
 	rc = pm8xxx_gpio_config(gpio15.gpio, &gpio15.config);
 	if (rc) {
-		pr_err("%s PRIMOU_GPIO_FLASH_EN config failed\n", __func__);
+		pr_err("%s SAGA_GPIO_FLASH_EN config failed\n", __func__);
 		return rc;
 	}
 	rc = pm8xxx_gpio_config(gpio18.gpio, &gpio18.config);
 	if (rc) {
-		pr_err("%s PRIMOU_AUD_SPK_SD config failed\n", __func__);
+		pr_err("%s SAGA_AUD_SPK_SD config failed\n", __func__);
 		return rc;
 	}
 
 	rc = pm8xxx_gpio_config(gpio19.gpio, &gpio19.config);
 	if (rc) {
-		pr_err("%s PRIMOU_AUD_AMP_EN config failed\n", __func__);
+		pr_err("%s SAGA_AUD_AMP_EN config failed\n", __func__);
 		return rc;
 	}
 /*
@@ -1373,14 +1373,14 @@ static int pm8058_gpios_init(void)
 
 	rc = pm8xxx_gpio_config(sdcc_det.gpio, &sdcc_det.config);
 	if (rc) {
-		pr_err("%s PRIMOU_GPIO_SDMC_CD_N config failed\n", __func__);
+		pr_err("%s SAGA_GPIO_SDMC_CD_N config failed\n", __func__);
 		return rc;
 	}
 #endif
 
-	keypad_gpio.gpio = PRIMOU_VOL_UP;
+	keypad_gpio.gpio = SAGA_VOL_UP;
 	pm8xxx_gpio_config(keypad_gpio.gpio, &keypad_gpio.config);
-	keypad_gpio.gpio = PRIMOU_VOL_DN;
+	keypad_gpio.gpio = SAGA_VOL_DN;
 	pm8xxx_gpio_config(keypad_gpio.gpio, &keypad_gpio.config);
 #if 0
 	if (machine_is_msm7x30_fluid()) {
@@ -1779,7 +1779,7 @@ static struct msm_ssbi_platform_data msm7x30_ssbi_pm8058_pdata __devinitdata = {
 #endif
 
 static struct tps65200_platform_data tps65200_data = {
-	.gpio_chg_int = MSM_GPIO_TO_INT(PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_CHG_INT)),
+	.gpio_chg_int = MSM_GPIO_TO_INT(PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_CHG_INT)),
 };
 
 static struct i2c_board_info i2c_tps_devices[] = {
@@ -1863,13 +1863,13 @@ static int sensor_power_disable(char *power)
 
 static int sensor_version = 999;
 #ifdef CONFIG_S5K4E5YX
-static int primou_sensor_version(void)
+static int saga_sensor_version(void)
 {
 	if (sensor_version == 999) {
-		if (gpio_get_value(PRIMOU_GPIO_CAM_ID) == 0) {
-			sensor_version = PRIMOU_S5K4E5YX_EVT2;
+		if (gpio_get_value(SAGA_GPIO_CAM_ID) == 0) {
+			sensor_version = SAGA_S5K4E5YX_EVT2;
 		} else {
-			sensor_version = PRIMOU_S5K4E5YX_EVT1;
+			sensor_version = SAGA_S5K4E5YX_EVT1;
 		}
 	}
 	return sensor_version;
@@ -1888,7 +1888,7 @@ static int Primou_s5k4e5yx_vreg_on(void)
 	rc = sensor_power_enable("gp7", 2850);
 	pr_info("[CAM] sensor_power_enable(\"gp7\", 2850) == %d\n", rc);
 
-	if (primou_sensor_version() == PRIMOU_S5K4E5YX_EVT2) {
+	if (saga_sensor_version() == SAGA_S5K4E5YX_EVT2) {
 		/* EVT2 V_CAM_D1V5 */
 		rc = sensor_power_enable("gp2", 1500);
 		pr_info("[CAM] sensor_power_enable(\"gp2\", 1500) == %d\n", rc);
@@ -2178,8 +2178,8 @@ static struct msm_camera_sensor_info msm_camera_sensor_s5k4e5yx_data = {
 	.camera_power_on = Primou_s5k4e5yx_vreg_on,
 	.camera_power_off = Primou_s5k4e5yx_vreg_off,
 	.pdata = &camera_device_data,
-	.sensor_pwd = PRIMOU_GPIO_CAM1_PWD,
-	.vcm_pwd = PRIMOU_GPIO_CAM1_VCM_PWD,
+	.sensor_pwd = SAGA_GPIO_CAM1_PWD,
+	.vcm_pwd = SAGA_GPIO_CAM1_VCM_PWD,
 	.flash_type = MSM_CAMERA_FLASH_LED,
 	.sensor_platform_info = &sensor_s5k4e5yx_board_info,
 	.resource = msm_camera_resources,
@@ -2190,7 +2190,7 @@ static struct msm_camera_sensor_info msm_camera_sensor_s5k4e5yx_data = {
 	.dev_node = 0,
 	.gpio_set_value_force = 1,/*use different method of gpio set value*/
 	.use_rawchip = 1,
-	.sensor_version = primou_sensor_version,
+	.sensor_version = saga_sensor_version,
 #ifdef CONFIG_ARCH_MSM_FLASHLIGHT
 	.flash_cfg = &msm_camera_sensor_s5k4e5yx_flash_cfg,
 #endif
@@ -2205,13 +2205,13 @@ static struct platform_device msm_camera_sensor_s5k4e5yx = {
 #endif
 
 #ifdef CONFIG_RAWCHIP
-static int primou_use_ext_1v2(void)
+static int saga_use_ext_1v2(void)
 {
 
 		return 1;
 
 }
-static int primou_rawchip_vreg_on(void)
+static int saga_rawchip_vreg_on(void)
 {
 	int rc;
 	pr_info("[CAM] %s rawchip vreg on\n", __func__);
@@ -2227,14 +2227,14 @@ static int primou_rawchip_vreg_on(void)
 	mdelay(1);
 	if (system_rev >= 2) {
 		/* V_RAW_1V2_EN*/
-		rc = gpio_request(PRIMOU_GPIO_RAW_1V2_EN, "V_RAW_1V2_EN");
+		rc = gpio_request(SAGA_GPIO_RAW_1V2_EN, "V_RAW_1V2_EN");
 		if (rc) {
 			pr_err("[CAM] sensor_power_enable\
 				(\"gpio %d\", 1.8V) FAILED %d\n",
-				PRIMOU_GPIO_RAW_1V2_EN, rc);
+				SAGA_GPIO_RAW_1V2_EN, rc);
 		} else {
-			gpio_direction_output(PRIMOU_GPIO_RAW_1V2_EN, 1);
-			gpio_free(PRIMOU_GPIO_RAW_1V2_EN);
+			gpio_direction_output(SAGA_GPIO_RAW_1V2_EN, 1);
+			gpio_free(SAGA_GPIO_RAW_1V2_EN);
 		}		
 	} else {
 		/* V_RAWCSI_1V2 */
@@ -2267,21 +2267,21 @@ enable_v_raw_1v8_fail:
 	return rc;
 }
 
-static int primou_rawchip_vreg_off(void)
+static int saga_rawchip_vreg_off(void)
 {
 	int rc = 1;
 	pr_info("[CAM] %s rawchip vreg off\n", __func__);
 
 	if (system_rev >= 2) {
 		/* V_RAW_1V2_EN */
-		rc = gpio_request(PRIMOU_GPIO_RAW_1V2_EN, "V_RAW_1V2_EN");
+		rc = gpio_request(SAGA_GPIO_RAW_1V2_EN, "V_RAW_1V2_EN");
 		if (rc) {
 			pr_err("[CAM] sensor_power_disable\
 				(\"gpio %d\", 1.8V) FAILED %d\n",
-				PRIMOU_GPIO_RAW_1V2_EN, rc);
+				SAGA_GPIO_RAW_1V2_EN, rc);
 		} else {
-			gpio_direction_output(PRIMOU_GPIO_RAW_1V2_EN, 0);
-			gpio_free(PRIMOU_GPIO_RAW_1V2_EN);
+			gpio_direction_output(SAGA_GPIO_RAW_1V2_EN, 0);
+			gpio_free(SAGA_GPIO_RAW_1V2_EN);
 		}		
 	} else {
 		/* V_RAW_1V2 */
@@ -2307,33 +2307,33 @@ static int primou_rawchip_vreg_off(void)
 }
 
 static uint32_t rawchip_on_gpio_table[] = {
-	GPIO_CFG(PRIMOU_GPIO_RAW_RSTN, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP Reset */
-	GPIO_CFG(PRIMOU_GPIO_RAW_INTR0, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT0 */
-	GPIO_CFG(PRIMOU_GPIO_RAW_INTR1, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT1 */
-	GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CS, 2 , GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
+	GPIO_CFG(SAGA_GPIO_RAW_RSTN, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP Reset */
+	GPIO_CFG(SAGA_GPIO_RAW_INTR0, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT0 */
+	GPIO_CFG(SAGA_GPIO_RAW_INTR1, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT1 */
+	GPIO_CFG(SAGA_GPIO_MCAM_SPI_CS, 2 , GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
 #if 0
-	GPIO_CFG(PRIMOU_GPIO_CAM1_VCM_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(PRIMOU_GPIO_CAM1_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SAGA_GPIO_CAM1_VCM_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SAGA_GPIO_CAM1_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 #endif
-	GPIO_CFG(PRIMOU_GPIO_CAM_MCLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA), /* MCLK */
-	GPIO_CFG(PRIMOU_GPIO_CAM_I2C_SCL, 2, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA), /* I2C SCL*/
-	GPIO_CFG(PRIMOU_GPIO_CAM_I2C_SDA, 2, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA), /* I2C SDA*/
-	GPIO_CFG(PRIMOU_GPIO_RAW_RSTN, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP Reset */
-	GPIO_CFG(PRIMOU_GPIO_RAW_INTR0, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT0 */
-	GPIO_CFG(PRIMOU_GPIO_RAW_INTR1, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT1 */
+	GPIO_CFG(SAGA_GPIO_CAM_MCLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA), /* MCLK */
+	GPIO_CFG(SAGA_GPIO_CAM_I2C_SCL, 2, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA), /* I2C SCL*/
+	GPIO_CFG(SAGA_GPIO_CAM_I2C_SDA, 2, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_8MA), /* I2C SDA*/
+	GPIO_CFG(SAGA_GPIO_RAW_RSTN, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP Reset */
+	GPIO_CFG(SAGA_GPIO_RAW_INTR0, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT0 */
+	GPIO_CFG(SAGA_GPIO_RAW_INTR1, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP INT1 */
 };
 
 static uint32_t rawchip_off_gpio_table[] = {
-	GPIO_CFG(PRIMOU_GPIO_CAM1_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(PRIMOU_GPIO_CAM1_VCM_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(PRIMOU_GPIO_CAM_MCLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_8MA), /* MCLK */
-	GPIO_CFG(PRIMOU_GPIO_CAM_I2C_SCL, 2, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_4MA), /* I2C SCL*/
-	GPIO_CFG(PRIMOU_GPIO_CAM_I2C_SDA, 2, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_8MA), /* I2C SDA*/
-	GPIO_CFG(PRIMOU_GPIO_CAM_MCLK, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_16MA), /* MCLK */
-	GPIO_CFG(PRIMOU_GPIO_RAW_RSTN, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP Reset */
-	GPIO_CFG(PRIMOU_GPIO_RAW_INTR0, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* RAW CHIP INT0 */
-	GPIO_CFG(PRIMOU_GPIO_RAW_INTR1, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* RAW CHIP INT1 */
-	GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CS, 0 , GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_4MA),
+	GPIO_CFG(SAGA_GPIO_CAM1_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SAGA_GPIO_CAM1_VCM_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+	GPIO_CFG(SAGA_GPIO_CAM_MCLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_8MA), /* MCLK */
+	GPIO_CFG(SAGA_GPIO_CAM_I2C_SCL, 2, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_4MA), /* I2C SCL*/
+	GPIO_CFG(SAGA_GPIO_CAM_I2C_SDA, 2, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_8MA), /* I2C SDA*/
+	GPIO_CFG(SAGA_GPIO_CAM_MCLK, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_16MA), /* MCLK */
+	GPIO_CFG(SAGA_GPIO_RAW_RSTN, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* RAW CHIP Reset */
+	GPIO_CFG(SAGA_GPIO_RAW_INTR0, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* RAW CHIP INT0 */
+	GPIO_CFG(SAGA_GPIO_RAW_INTR1, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* RAW CHIP INT1 */
+	GPIO_CFG(SAGA_GPIO_MCAM_SPI_CS, 0 , GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_4MA),
 };
 
 static int config_rawchip_on_gpios(void)
@@ -2352,16 +2352,16 @@ static void config_rawchip_off_gpios(void)
 }
 
 static struct msm_camera_rawchip_info msm_rawchip_board_info = {
-	.rawchip_reset	= PRIMOU_GPIO_RAW_RSTN,
-	.rawchip_intr0	= PRIMOU_GPIO_RAW_INTR0,
-	.rawchip_intr1	= PRIMOU_GPIO_RAW_INTR1,
+	.rawchip_reset	= SAGA_GPIO_RAW_RSTN,
+	.rawchip_intr0	= SAGA_GPIO_RAW_INTR0,
+	.rawchip_intr1	= SAGA_GPIO_RAW_INTR1,
 	.rawchip_spi_freq = 27, /* MHz, should be the same to spi max_speed_hz */
 	.rawchip_mclk_freq = 24, /* MHz, should be the same as cam csi0 mclk_clk_rate */
-	.camera_rawchip_power_on = primou_rawchip_vreg_on,
-	.camera_rawchip_power_off = primou_rawchip_vreg_off,
+	.camera_rawchip_power_on = saga_rawchip_vreg_on,
+	.camera_rawchip_power_off = saga_rawchip_vreg_off,
 	.rawchip_gpio_on = config_rawchip_on_gpios,
 	.rawchip_gpio_off = config_rawchip_off_gpios,
-	.rawchip_use_ext_1v2 = primou_use_ext_1v2,
+	.rawchip_use_ext_1v2 = saga_use_ext_1v2,
 };
 
 static struct platform_device msm_rawchip_device = {
@@ -2430,7 +2430,7 @@ static unsigned aux_pcm_gpio_on[] = {
 };
 
 static struct tpa2051d3_platform_data tpa2051d3_platform_data = {
-	.gpio_tpa2051_spk_en = PRIMOU_AUD_SPK_SD,
+	.gpio_tpa2051_spk_en = SAGA_AUD_SPK_SD,
 };
 
 static int __init aux_pcm_gpio_init(void)
@@ -3229,7 +3229,7 @@ static struct marimba_platform_data marimba_pdata = {
 	.tsadc_ssbi_adap = MARIMBA_SSBI_ADAP,
 };
 
-static void __init primou_init_marimba(void)
+static void __init saga_init_marimba(void)
 {
 #if 0
 	vreg_marimba_1 = vreg_get(NULL, "s2");
@@ -3640,7 +3640,7 @@ static struct android_usb_platform_data android_usb_pdata = {
 	.functions = usb_functions_all,
 	.fserial_init_string = "tty:modem,tty:autobot,tty:serial,tty:autobot",
 	.nluns = 2,
-	.usb_id_pin_gpio = PRIMOU_GPIO_USB_ID1_PIN,
+	.usb_id_pin_gpio = SAGA_GPIO_USB_ID1_PIN,
 };
 
 static struct platform_device android_usb_device = {
@@ -3887,9 +3887,9 @@ static struct i2c_board_info bma150_board_info[] __initdata = {
 #endif
 
 static struct bma250_platform_data gsensor_bma250_platform_data = {
-	.intr = PRIMOU_GPIO_GSENSOR_INT,
+	.intr = SAGA_GPIO_GSENSOR_INT,
 	.chip_layout = 0,
-	.layouts = PRIMOU_LAYOUTS,
+	.layouts = SAGA_LAYOUTS,
 };
 
 static struct i2c_board_info i2c_bma250_devices[] = {
@@ -3897,7 +3897,7 @@ static struct i2c_board_info i2c_bma250_devices[] = {
 		I2C_BOARD_INFO(BMA250_I2C_NAME_REMOVE_ECOMPASS, \
 				0x30 >> 1),
 		.platform_data = &gsensor_bma250_platform_data,
-		.irq = MSM_GPIO_TO_INT(PRIMOU_GPIO_GSENSOR_INT),
+		.irq = MSM_GPIO_TO_INT(SAGA_GPIO_GSENSOR_INT),
 	},
 };
 
@@ -3932,10 +3932,10 @@ static struct platform_device hs_device = {
 
 #ifdef CONFIG_RAWCHIP
 static uint32_t msm_spi_on_gpio[] = {
-       GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_DO, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
-       GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_DI, 1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_4MA),
-       GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CS, 2 /*3*/, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
-       GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
+       GPIO_CFG(SAGA_GPIO_MCAM_SPI_DO, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
+       GPIO_CFG(SAGA_GPIO_MCAM_SPI_DI, 1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_4MA),
+       GPIO_CFG(SAGA_GPIO_MCAM_SPI_CS, 2 /*3*/, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
+       GPIO_CFG(SAGA_GPIO_MCAM_SPI_CLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
 };
 #endif
 
@@ -4059,17 +4059,17 @@ static struct spi_board_info spi_rawchip_board_info[] __initdata = {
 #endif
 
 static uint32_t qsd_spi_gpio_on_table[] = {
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CLK, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_DO, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_DI, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_4MA),
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CS, 2, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA)
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_CLK, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_DO, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_DI, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_4MA),
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_CS, 2, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA)
 };
 
 static uint32_t qsd_spi_gpio_off_table[] = {
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CLK, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_DO, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_DI, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_4MA),
-	PCOM_GPIO_CFG(PRIMOU_GPIO_MCAM_SPI_CS, 2, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA)
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_CLK, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_DO, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA),
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_DI, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_4MA),
+	PCOM_GPIO_CFG(SAGA_GPIO_MCAM_SPI_CS, 2, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_CFG_4MA)
 };
 
 static int msm_qsd_spi_gpio_config(void)
@@ -4568,14 +4568,14 @@ static struct msm_serial_hs_platform_data msm_uart_dm1_pdata = {
 
 	/* for bcm BT */
 	.bt_wakeup_pin_supported = 1,
-	.bt_wakeup_pin = PRIMOU_GPIO_BT_WAKE,
-	.host_wakeup_pin = PRIMOU_GPIO_BT_HOST_WAKE,
+	.bt_wakeup_pin = SAGA_GPIO_BT_WAKE,
+	.host_wakeup_pin = SAGA_GPIO_BT_HOST_WAKE,
 };
 #endif
 
 #ifdef CONFIG_BT
-static struct platform_device primou_rfkill = {
-	.name = "primou_rfkill",
+static struct platform_device saga_rfkill = {
+	.name = "saga_rfkill",
 	.id = -1,
 };
 #endif
@@ -4638,8 +4638,8 @@ static struct platform_device ram_console_device = {
 
 /* HEADSET DRIVER BEGIN */
 
-#define HEADSET_DETECT		PRIMOU_GPIO_35MM_HEADSET_DET
-#define HEADSET_BUTTON		PRIMOU_AUD_REMO_PRES
+#define HEADSET_DETECT		SAGA_GPIO_35MM_HEADSET_DET
+#define HEADSET_BUTTON		SAGA_AUD_REMO_PRES
 
 /* HTC_HEADSET_GPIO Driver */
 static struct htc_headset_gpio_platform_data htc_headset_gpio_data = {
@@ -4735,7 +4735,7 @@ static struct platform_device htc_headset_mgr = {
 static void config_flashlight_gpios_tps61310(void)
 {
 	static uint32_t flashlight_gpio_table[] = {
-		GPIO_CFG(PRIMOU_GPIO_TORCH_EN, 0, GPIO_OUTPUT,
+		GPIO_CFG(SAGA_GPIO_TORCH_EN, 0, GPIO_OUTPUT,
 						GPIO_NO_PULL, GPIO_CFG_2MA),
 	};
 	config_gpio_table(flashlight_gpio_table,
@@ -4744,18 +4744,18 @@ static void config_flashlight_gpios_tps61310(void)
 }
 
 
-static struct TPS61310_flashlight_platform_data primou_flashlight_data = {
+static struct TPS61310_flashlight_platform_data saga_flashlight_data = {
 	.gpio_init = config_flashlight_gpios_tps61310,
-	.tps61310_strb1 = PRIMOU_GPIO_TORCH_EN,
-	.tps61310_strb0 = PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_FLASH_EN),
+	.tps61310_strb1 = SAGA_GPIO_TORCH_EN,
+	.tps61310_strb0 = PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_FLASH_EN),
 	.flash_duration_ms = 600,
 	.led_count = 1,
 };
 
-static struct i2c_board_info primou_flashlight[] = {
+static struct i2c_board_info saga_flashlight[] = {
 {
 	I2C_BOARD_INFO("TPS61310_FLASHLIGHT", 0x66 >> 1),
-	.platform_data	= &primou_flashlight_data,
+	.platform_data	= &saga_flashlight_data,
 	},
 };
 #endif
@@ -4862,7 +4862,7 @@ static struct platform_device pm8058_leds_CH = {
 
 
 #define PM8058ADC_16BIT(adc) ((adc * 2200) / 65535) /* vref=2.2v, 16-bits resolution */
-int64_t primou_get_usbid_adc(void)
+int64_t saga_get_usbid_adc(void)
 {
 	uint32_t adc_value = 0xffffffff;
 	htc_get_usb_accessory_adc_level(&adc_value);
@@ -4871,30 +4871,30 @@ int64_t primou_get_usbid_adc(void)
 }
 
 static uint32_t usb_ID_PIN_input_table[] = {
-	GPIO_CFG(PRIMOU_GPIO_USB_ID1_PIN, 0, GPIO_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
+	GPIO_CFG(SAGA_GPIO_USB_ID1_PIN, 0, GPIO_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
 };
 
 static uint32_t usb_ID_PIN_ouput_table[] = {
-	GPIO_CFG(PRIMOU_GPIO_USB_ID1_PIN, 0, GPIO_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
+	GPIO_CFG(SAGA_GPIO_USB_ID1_PIN, 0, GPIO_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_4MA),
 };
 
-void config_primou_usb_id_gpios(bool output)
+void config_saga_usb_id_gpios(bool output)
 {
 	if (output) {
 		config_gpio_table(usb_ID_PIN_ouput_table, ARRAY_SIZE(usb_ID_PIN_ouput_table));
-		gpio_set_value(PRIMOU_GPIO_USB_ID1_PIN, 1);
-		printk(KERN_INFO "%s %d output high\n",  __func__, PRIMOU_GPIO_USB_ID1_PIN);
+		gpio_set_value(SAGA_GPIO_USB_ID1_PIN, 1);
+		printk(KERN_INFO "%s %d output high\n",  __func__, SAGA_GPIO_USB_ID1_PIN);
 	} else {
 		config_gpio_table(usb_ID_PIN_input_table, ARRAY_SIZE(usb_ID_PIN_input_table));
-		printk(KERN_INFO "%s %d input none pull\n",  __func__, PRIMOU_GPIO_USB_ID1_PIN);
+		printk(KERN_INFO "%s %d input none pull\n",  __func__, SAGA_GPIO_USB_ID1_PIN);
 	}
 }
 
 static struct cable_detect_platform_data cable_detect_pdata = {
 	.detect_type 		= CABLE_TYPE_PMIC_ADC,
-	.usb_id_pin_gpio 	= PRIMOU_GPIO_USB_ID1_PIN,
-	.config_usb_id_gpios 	= config_primou_usb_id_gpios,
-	.get_adc_cb		= primou_get_usbid_adc,
+	.usb_id_pin_gpio 	= SAGA_GPIO_USB_ID1_PIN,
+	.config_usb_id_gpios 	= config_saga_usb_id_gpios,
+	.get_adc_cb		= saga_get_usbid_adc,
 };
 
 static struct platform_device cable_detect_device = {
@@ -5002,7 +5002,7 @@ static struct platform_device *devices[] __initdata = {
         &msm_device_uart_dm1,
 #endif
 #ifdef CONFIG_BT
-        &primou_rfkill,
+        &saga_rfkill,
 #endif
 
 
@@ -5110,7 +5110,7 @@ static struct platform_device *devices_CH[] __initdata = {
 	&msm_device_uart_dm1,
 #endif
 #ifdef CONFIG_BT
-	&primou_rfkill,
+	&saga_rfkill,
 #endif
 
 
@@ -5253,7 +5253,7 @@ static struct msm_i2c_ssbi_platform_data msm_i2c_ssbi7_pdata = {
 };
 #endif
 
-static void __init primou_init_irq(void)
+static void __init saga_init_irq(void)
 {
 	msm_init_irq();
 }
@@ -5954,7 +5954,7 @@ static unsigned int msm7x30_sdcc_slot_status(struct device *dev)
 {
 	return (unsigned int)
 		!gpio_get_value_cansleep(
-			PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_SDMC_CD_N));
+			PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_SDMC_CD_N));
 }
 #endif
 
@@ -6014,7 +6014,7 @@ static struct mmc_platform_data msm7x30_sdc1_data = {
 #endif
 
 #ifdef CONFIG_MMC_MSM_SDC2_SUPPORT
-static unsigned int primou_sdc2_slot_type = MMC_TYPE_MMC;
+static unsigned int saga_sdc2_slot_type = MMC_TYPE_MMC;
 static struct mmc_platform_data msm7x30_sdc2_data = {
 	.ocr_mask       = MMC_VDD_165_195 | MMC_VDD_27_28,
 #ifdef CONFIG_MMC_MSM_SDC2_8_BIT_SUPPORT
@@ -6025,7 +6025,7 @@ static struct mmc_platform_data msm7x30_sdc2_data = {
 	.msmsdcc_fmin	= 144000,
 	.msmsdcc_fmid	= 24576000,
 	.msmsdcc_fmax	= 49152000,
-	.slot_type		= &primou_sdc2_slot_type,
+	.slot_type		= &saga_sdc2_slot_type,
 	.nonremovable	= 1,
 };
 #endif
@@ -6033,7 +6033,7 @@ static struct mmc_platform_data msm7x30_sdc2_data = {
 #ifdef CONFIG_MMC_MSM_SDC3_SUPPORT
 /* HTC_WIFI_START */
 /*
-static unsigned int primou_sdc3_slot_type = MMC_TYPE_SDIO_WIFI;
+static unsigned int saga_sdc3_slot_type = MMC_TYPE_SDIO_WIFI;
 static struct mmc_platform_data msm7x30_sdc3_data = {
 	.ocr_mask	= MMC_VDD_27_28 | MMC_VDD_28_29,
 	.translate_vdd	= msm_sdcc_setup_power,
@@ -6044,7 +6044,7 @@ static struct mmc_platform_data msm7x30_sdc3_data = {
 	.msmsdcc_fmin	= 144000,
 	.msmsdcc_fmid	= 24576000,
 	.msmsdcc_fmax	= 49152000,
-	.slot_type		= &primou_sdc3_slot_type,
+	.slot_type		= &saga_sdc3_slot_type,
 	.nonremovable	= 0,
 };
 */
@@ -6052,7 +6052,7 @@ static struct mmc_platform_data msm7x30_sdc3_data = {
 #endif
 
 #ifdef CONFIG_MMC_MSM_SDC4_SUPPORT
-static unsigned int primou_sdc4_slot_type = MMC_TYPE_SD;
+static unsigned int saga_sdc4_slot_type = MMC_TYPE_SD;
 static struct mmc_platform_data msm7x30_sdc4_data = {
 	.ocr_mask	= MMC_VDD_27_28 | MMC_VDD_28_29,
 	.translate_vdd	= msm_sdcc_setup_power,
@@ -6060,7 +6060,7 @@ static struct mmc_platform_data msm7x30_sdc4_data = {
 
 #ifdef CONFIG_MMC_MSM_CARD_HW_DETECTION
 	.status      = msm7x30_sdcc_slot_status,
-	.status_irq  = PM8058_GPIO_IRQ(PMIC8058_IRQ_BASE, PRIMOU_GPIO_SDMC_CD_N),
+	.status_irq  = PM8058_GPIO_IRQ(PMIC8058_IRQ_BASE, SAGA_GPIO_SDMC_CD_N),
 	.irq_flags   = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 #endif
 
@@ -6071,7 +6071,7 @@ static struct mmc_platform_data msm7x30_sdc4_data = {
 	.msmsdcc_fmid	= 24576000,
 	.msmsdcc_fmax	= 49152000,
 	.nonremovable	= 0,
-	.slot_type     = &primou_sdc4_slot_type,
+	.slot_type     = &saga_sdc4_slot_type,
 };
 #endif
 
@@ -6144,7 +6144,7 @@ static void __init msm7x30_init_mmc(void)
 	msm_sdcc_setup_gpio(3, 1);
 	msm_add_sdcc(3, &msm7x30_sdc3_data);
 	*/
-	primou_init_mmc(system_rev);
+	saga_init_mmc(system_rev);
 /* HTC_WIFI_END*/
 #endif
 #ifdef CONFIG_MMC_MSM_SDC4_SUPPORT
@@ -6237,15 +6237,15 @@ static struct msm_spm_platform_data msm_spm_data __initdata = {
 };
 
 #ifdef CONFIG_PERFLOCK
-static unsigned primou_perf_acpu_table[] = {
+static unsigned saga_perf_acpu_table[] = {
 	245000000,
 	768000000,
 	1024000000,
 };
 
-static struct perflock_platform_data primou_perflock_data = {
-	.perf_acpu_table = primou_perf_acpu_table,
-	.table_size = ARRAY_SIZE(primou_perf_acpu_table),
+static struct perflock_platform_data saga_perflock_data = {
+	.perf_acpu_table = saga_perf_acpu_table,
+	.table_size = ARRAY_SIZE(saga_perf_acpu_table),
 };
 #endif
 
@@ -6410,12 +6410,12 @@ static struct platform_device flip_switch_device = {
 	}
 };
 */
-static void primou_reset(void)
+static void saga_reset(void)
 {
-	gpio_set_value(PRIMOU_GPIO_PS_HOLD, 0);
+	gpio_set_value(SAGA_GPIO_PS_HOLD, 0);
 }
 
-void primou_add_usb_devices(void)
+void saga_add_usb_devices(void)
 {
 	printk(KERN_INFO "%s rev: %d\n", __func__, system_rev);
 	android_usb_pdata.products[0].product_id =
@@ -6432,7 +6432,7 @@ void primou_add_usb_devices(void)
 		android_usb_pdata.cdrom_lun = 0x4;
 	}
 
-	config_primou_usb_id_gpios(0);
+	config_saga_usb_id_gpios(0);
 	msm_device_gadget_peripheral.dev.parent = &msm_device_otg.dev;
 	platform_device_register(&msm_device_gadget_peripheral);
 	platform_device_register(&android_usb_device);
@@ -6445,7 +6445,7 @@ static int __init board_serialno_setup(char *serialno)
 }
 
 #ifdef CONFIG_MDP4_HW_VSYNC
-static void primou_te_gpio_config(void)
+static void saga_te_gpio_config(void)
 {
 	uint32_t te_gpio_table[] = {
 	PCOM_GPIO_CFG(30, 1, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_2MA),
@@ -6455,7 +6455,7 @@ static void primou_te_gpio_config(void)
 #endif
 
 __setup("androidboot.serialno=", board_serialno_setup);
-static void __init primou_init(void)
+static void __init saga_init(void)
 {
 	int rc = 0, i = 0;
 	struct kobject *properties_kobj;
@@ -6467,14 +6467,14 @@ static void __init primou_init(void)
 	soc_version = socinfo_get_version();
 
 	/* Must set msm_hw_reset_hook before first proc comm */
-	msm_hw_reset_hook = primou_reset;
+	msm_hw_reset_hook = saga_reset;
 
 	msm_clock_init(&msm7x30_clock_init_data);
 	msm_spm_init(&msm_spm_data, 1);
 	acpuclk_init(&acpuclk_7x30_soc_data);
 
 #ifdef CONFIG_PERFLOCK
-	perflock_init(&primou_perflock_data);
+	perflock_init(&saga_perflock_data);
 #endif
 
 #ifdef CONFIG_BT
@@ -6482,7 +6482,7 @@ static void __init primou_init(void)
 #endif
 
 #ifdef CONFIG_SERIAL_MSM_HS
-	msm_uart_dm1_pdata.rx_wakeup_irq = gpio_to_irq(PRIMOU_GPIO_BT_HOST_WAKE);
+	msm_uart_dm1_pdata.rx_wakeup_irq = gpio_to_irq(SAGA_GPIO_BT_HOST_WAKE);
 	msm_device_uart_dm1.name = "msm_serial_hs_brcm";
 	msm_device_uart_dm1.dev.platform_data = &msm_uart_dm1_pdata;
 #endif
@@ -6536,7 +6536,7 @@ static void __init primou_init(void)
 
 	/*usb driver won't be loaded in MFG 58 station and gift mode*/
 	if (!(board_mfg_mode() == 6 || board_mfg_mode() == 7))
-		primou_add_usb_devices();
+		saga_add_usb_devices();
 
 #ifdef CONFIG_USB_EHCI_MSM_72K
 	msm_add_host(0, &msm_usb_host_pdata);
@@ -6551,19 +6551,19 @@ static void __init primou_init(void)
 	msm_device_i2c_init();
 	msm_device_i2c_2_init();
 	qup_device_i2c_init();
-	primou_init_marimba();
+	saga_init_marimba();
 #ifdef CONFIG_MSM7KV2_AUDIO
 	aux_pcm_gpio_init();
 	msm_snddev_init();
-	primou_audio_init();
+	saga_audio_init();
 #endif
 #ifdef CONFIG_RAWCHIP
 	spi_register_board_info(spi_rawchip_board_info,
 	ARRAY_SIZE(spi_rawchip_board_info));
 #endif
 #ifdef CONFIG_FLASHLIGHT_TPS61310
-	i2c_register_board_info(0, primou_flashlight,
-	ARRAY_SIZE(primou_flashlight));
+	i2c_register_board_info(0, saga_flashlight,
+	ARRAY_SIZE(saga_flashlight));
 
 #endif
 	/* i2c_register_board_info(0, msm_i2c_board_info,
@@ -6629,8 +6629,8 @@ static void __init primou_init(void)
 	config_gpio_table(camera_on_gpio_table, ARRAY_SIZE(camera_on_gpio_table));
 #endif
 	if (board_mfg_mode() == 1) {
-		for (i = 0; i < ARRAY_SIZE(primou_ts_synaptics_data);  i++)
-			primou_ts_synaptics_data[i].mfg_flag = 1;
+		for (i = 0; i < ARRAY_SIZE(saga_ts_synaptics_data);  i++)
+			saga_ts_synaptics_data[i].mfg_flag = 1;
 	}
 
 	i2c_register_board_info(0, i2c_devices,
@@ -6642,11 +6642,11 @@ static void __init primou_init(void)
 	device_mid = get_model_id();
 	if (strstr(device_mid, "PK7612")) {
 		if (1 == board_mfg_mode()) {
-			primou_synaptics_virtual_keys_attr.show = &primou_synaptics_virtual_keys_show_china_mfg;
-			primou_himax_virtual_keys_attr.show = &primou_himax_virtual_keys_show_china_mfg;
+			saga_synaptics_virtual_keys_attr.show = &saga_synaptics_virtual_keys_show_china_mfg;
+			saga_himax_virtual_keys_attr.show = &saga_himax_virtual_keys_show_china_mfg;
 		} else {
-			primou_synaptics_virtual_keys_attr.show = &primou_synaptics_virtual_keys_show_china;
-			primou_himax_virtual_keys_attr.show = &primou_himax_virtual_keys_show_china;
+			saga_synaptics_virtual_keys_attr.show = &saga_synaptics_virtual_keys_show_china;
+			saga_himax_virtual_keys_attr.show = &saga_himax_virtual_keys_show_china;
 		}
 	}
 
@@ -6654,16 +6654,16 @@ static void __init primou_init(void)
 	properties_kobj = kobject_create_and_add("board_properties", NULL);
 	if (properties_kobj)
 		rc = sysfs_create_group(properties_kobj,
-				&primou_properties_attr_group);
+				&saga_properties_attr_group);
 	if (!properties_kobj || rc)
 		pr_err("failed to create board_properties\n");
 
-	primou_init_keypad();
+	saga_init_keypad();
 #ifdef CONFIG_MDP4_HW_VSYNC
-	primou_te_gpio_config();
+	saga_te_gpio_config();
 #endif
-	primou_init_panel();
-	primou_wifi_init();
+	saga_init_panel();
+	saga_wifi_init();
 }
 
 static unsigned pmem_sf_size = MSM_PMEM_SF_SIZE;
@@ -6779,13 +6779,13 @@ static struct reserve_info msm7x30_reserve_info __initdata = {
 	.paddr_to_memtype = msm7x30_paddr_to_memtype,
 };
 
-static void __init primou_reserve(void)
+static void __init saga_reserve(void)
 {
 	reserve_info = &msm7x30_reserve_info;
 	msm_reserve();
 }
 
-static void __init primou_allocate_memory_regions(void)
+static void __init saga_allocate_memory_regions(void)
 {
 	void *addr;
 	unsigned long size;
@@ -6799,7 +6799,7 @@ static void __init primou_allocate_memory_regions(void)
 			size, addr, __pa(addr));
 }
 
-static void __init primou_map_io(void)
+static void __init saga_map_io(void)
 {
 	msm_shared_ram_phys = 0x00400000;
 	msm_map_msm7x30_io();
@@ -6808,12 +6808,12 @@ static void __init primou_map_io(void)
 		       __func__);
 }
 
-static void __init primou_init_early(void)
+static void __init saga_init_early(void)
 {
-	primou_allocate_memory_regions();
+	saga_allocate_memory_regions();
 }
 
-static void __init primou_fixup(struct machine_desc *desc, struct tag *tags,
+static void __init saga_fixup(struct machine_desc *desc, struct tag *tags,
 								char **cmdline, struct meminfo *mi)
 {
 	engineerid = parse_tag_engineerid(tags);
@@ -6825,12 +6825,12 @@ static void __init primou_fixup(struct machine_desc *desc, struct tag *tags,
 	mi->bank[1].size = MSM_LINUX_SIZE2;
 }
 
-MACHINE_START(PRIMOU, "primou")
-	.fixup = primou_fixup,
-	.map_io = primou_map_io,
-	.reserve = primou_reserve,
-	.init_irq = primou_init_irq,
-	.init_machine = primou_init,
+MACHINE_START(SAGA, "saga")
+	.fixup = saga_fixup,
+	.map_io = saga_map_io,
+	.reserve = saga_reserve,
+	.init_irq = saga_init_irq,
+	.init_machine = saga_init,
 	.timer = &msm_timer,
-	.init_early = primou_init_early,
+	.init_early = saga_init_early,
 MACHINE_END

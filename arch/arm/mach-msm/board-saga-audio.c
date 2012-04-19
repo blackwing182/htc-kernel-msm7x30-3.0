@@ -1,4 +1,4 @@
-/* linux/arch/arm/mach-msm/board-primou-audio.c
+/* linux/arch/arm/mach-msm/board-saga-audio.c
  *
  * Copyright (C) 2010-2011 HTC Corporation.
  *
@@ -23,7 +23,7 @@
 #include <mach/gpio.h>
 #include <mach/pmic.h>
 #include <mach/dal.h>
-#include "board-primou.h"
+#include "board-saga.h"
 #include <mach/qdsp5v2_2x/snddev_icodec.h>
 #include <mach/qdsp5v2_2x/snddev_ecodec.h>
 #include <mach/qdsp5v2_2x/audio_def.h>
@@ -43,8 +43,8 @@ static atomic_t beats_enabled = ATOMIC_INIT(0);
 #define BIT_FM_SPK	(1 << 3)
 #define BIT_FM_HS	(1 << 4)
 #define PMGPIO(x) (x-1)
-#define PRIMOU_ACDB_SMEM_SIZE        (0xE000)
-#define PRIMOU_ACDB_RADIO_BUFFER_SIZE (1024 * 3072)
+#define SAGA_ACDB_SMEM_SIZE        (0xE000)
+#define SAGA_ACDB_RADIO_BUFFER_SIZE (1024 * 3072)
 
 static struct vreg *vreg_audio_n1v8;
 
@@ -127,7 +127,7 @@ static void config_gpio_table(uint32_t *table, int len)
 	}
 }
 
-void primou_hs_n1v8_enable(int en)
+void saga_hs_n1v8_enable(int en)
 {
 	int rc = 0;
 
@@ -166,41 +166,41 @@ vreg_aud_hp_1v8_faill:
 		__func__, PTR_ERR(vreg_audio_n1v8));
 }
 
-void primou_snddev_poweramp_on(int en)
+void saga_snddev_poweramp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
 
 	if (en) {
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_SPK_SD), 1);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 1);
 		mdelay(100);
 	} else {
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_SPK_SD), 0);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 0);
 	}
 }
 
-void primou_snddev_hsed_pamp_on(int en)
+void saga_snddev_hsed_pamp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
 }
 
-void primou_snddev_pre_hsed_pamp_on(int en)
+void saga_snddev_pre_hsed_pamp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
 
 	if (en) {
-		primou_hs_n1v8_enable(1);
+		saga_hs_n1v8_enable(1);
 	} else {
-		primou_hs_n1v8_enable(0);
+		saga_hs_n1v8_enable(0);
 	}
 }
 
-void primou_snddev_hs_spk_pamp_on(int en)
+void saga_snddev_hs_spk_pamp_on(int en)
 {
-	primou_snddev_poweramp_on(en);
-	primou_snddev_hsed_pamp_on(en);
+	saga_snddev_poweramp_on(en);
+	saga_snddev_hsed_pamp_on(en);
 }
 
-void primou_snddev_bt_sco_pamp_on(int en)
+void saga_snddev_bt_sco_pamp_on(int en)
 {
 	static int bt_sco_refcount;
 	pr_aud_info("%s %d\n", __func__, en);
@@ -214,16 +214,16 @@ void primou_snddev_bt_sco_pamp_on(int en)
 			config_gpio_table(aux_pcm_gpio_off,
 					ARRAY_SIZE(aux_pcm_gpio_off));
 
-			gpio_set_value(PRIMOU_GPIO_BT_PCM_OUT, 0);
-			gpio_set_value(PRIMOU_GPIO_BT_PCM_SYNC, 0);
-			gpio_set_value(PRIMOU_GPIO_BT_PCM_CLK, 0);
+			gpio_set_value(SAGA_GPIO_BT_PCM_OUT, 0);
+			gpio_set_value(SAGA_GPIO_BT_PCM_SYNC, 0);
+			gpio_set_value(SAGA_GPIO_BT_PCM_CLK, 0);
 
 		}
 	}
 	mutex_unlock(&bt_sco_lock);
 }
 
-void primou_snddev_imic_pamp_on(int en)
+void saga_snddev_imic_pamp_on(int en)
 {
 	pr_aud_info("%s: %d\n", __func__, en);
 
@@ -235,20 +235,20 @@ void primou_snddev_imic_pamp_on(int en)
 	}
 }
 
-void primou_snddev_emic_pamp_on(int en)
+void saga_snddev_emic_pamp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
 #if 0
 	if (en)
-		gpio_request(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_CODEC_EN), "aud_2v85_en");
-		gpio_direction_output(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_CODEC_EN), 1);
-		gpio_set_value(PRIMOU_AUD_CODEC_EN, 1);
+		gpio_request(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), "aud_2v85_en");
+		gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), 1);
+		gpio_set_value(SAGA_AUD_CODEC_EN, 1);
 	else
-		gpio_set_value(PRIMOU_AUD_CODEC_EN, 0);
+		gpio_set_value(SAGA_AUD_CODEC_EN, 0);
 #endif
 }
 
-int primou_get_rx_vol(uint8_t hw, int network, int level)
+int saga_get_rx_vol(uint8_t hw, int network, int level)
 {
 	struct q5v2_hw_info *info;
 	int vol, maxv, minv;
@@ -261,44 +261,44 @@ int primou_get_rx_vol(uint8_t hw, int network, int level)
 	return vol;
 }
 
-void primou_mic_bias_enable(int en, int shift)
+void saga_mic_bias_enable(int en, int shift)
 {
 	pr_aud_info("%s: %d\n", __func__, en);
 
 	if (en) {
-		gpio_set_value(PRIMOU_AUD_CODEC_EN, 1);
+		gpio_set_value(SAGA_AUD_CODEC_EN, 1);
 	} else {
-		gpio_set_value(PRIMOU_AUD_CODEC_EN, 0);
+		gpio_set_value(SAGA_AUD_CODEC_EN, 0);
 	}
 }
 
-uint32_t primou_get_smem_size(void)
+uint32_t saga_get_smem_size(void)
 {
-	return PRIMOU_ACDB_SMEM_SIZE;
+	return SAGA_ACDB_SMEM_SIZE;
 }
 
-uint32_t primou_get_acdb_radio_buffer_size(void)
+uint32_t saga_get_acdb_radio_buffer_size(void)
 {
-	return PRIMOU_ACDB_RADIO_BUFFER_SIZE;
+	return SAGA_ACDB_RADIO_BUFFER_SIZE;
 }
 
-int primou_support_aic3254(void)
+int saga_support_aic3254(void)
 {
 	return 0;
 }
 
-int primou_support_adie(void)
+int saga_support_adie(void)
 {
 	return 1;
 }
 
-int primou_support_back_mic(void)
+int saga_support_back_mic(void)
 {
 	return 0;
 }
 
 
-int primou_support_beats(void)
+int saga_support_beats(void)
 {
 	return 1;
 }
@@ -325,7 +325,7 @@ static void audio_work_func(struct work_struct *work)
 	}
 }
 
-void primou_enable_beats(int en)
+void saga_enable_beats(int en)
 {
 #if 0
 	pr_aud_info("%s: %d\n", __func__, en);
@@ -344,43 +344,43 @@ void primou_enable_beats(int en)
 }
 
 static struct q5v2audio_icodec_ops iops = {
-	.support_aic3254 = primou_support_aic3254,
-	.support_adie = primou_support_adie,
+	.support_aic3254 = saga_support_aic3254,
+	.support_adie = saga_support_adie,
 };
 
 static struct acdb_ops acdb = {
-	.get_acdb_radio_buffer_size = primou_get_acdb_radio_buffer_size,
+	.get_acdb_radio_buffer_size = saga_get_acdb_radio_buffer_size,
 };
 
 static struct q5v2audio_analog_ops ops = {
-	.speaker_enable	= primou_snddev_poweramp_on,
-	.headset_enable	= primou_snddev_hsed_pamp_on,
-	.bt_sco_enable = primou_snddev_bt_sco_pamp_on,
-	.headset_speaker_enable = primou_snddev_hs_spk_pamp_on,
-	.int_mic_enable = primou_snddev_imic_pamp_on,
-	.ext_mic_enable = primou_snddev_emic_pamp_on,
-	.fm_headset_enable = primou_snddev_hsed_pamp_on,
-	.fm_speaker_enable = primou_snddev_poweramp_on,
-	.qtr_headset_enable = primou_snddev_pre_hsed_pamp_on
+	.speaker_enable	= saga_snddev_poweramp_on,
+	.headset_enable	= saga_snddev_hsed_pamp_on,
+	.bt_sco_enable = saga_snddev_bt_sco_pamp_on,
+	.headset_speaker_enable = saga_snddev_hs_spk_pamp_on,
+	.int_mic_enable = saga_snddev_imic_pamp_on,
+	.ext_mic_enable = saga_snddev_emic_pamp_on,
+	.fm_headset_enable = saga_snddev_hsed_pamp_on,
+	.fm_speaker_enable = saga_snddev_poweramp_on,
+	.qtr_headset_enable = saga_snddev_pre_hsed_pamp_on
 };
 
 static struct q5v2audio_ecodec_ops eops = {
-	.bt_sco_enable  = primou_snddev_bt_sco_pamp_on,
+	.bt_sco_enable  = saga_snddev_bt_sco_pamp_on,
 };
 
 static struct q5v2voice_ops vops = {
-	.get_rx_vol = primou_get_rx_vol,
+	.get_rx_vol = saga_get_rx_vol,
 };
 
 static struct acoustic_ops acoustic = {
-	.enable_mic_bias = primou_mic_bias_enable,
-	.support_aic3254 = primou_support_aic3254,
-	.support_back_mic = primou_support_back_mic,
-	.support_beats = primou_support_beats,
-	.enable_beats = primou_enable_beats
+	.enable_mic_bias = saga_mic_bias_enable,
+	.support_aic3254 = saga_support_aic3254,
+	.support_back_mic = saga_support_back_mic,
+	.support_beats = saga_support_beats,
+	.enable_beats = saga_enable_beats
 };
 
-void __init primou_audio_init(void)
+void __init saga_audio_init(void)
 {
 
 	mutex_init(&bt_sco_lock);
@@ -394,20 +394,20 @@ void __init primou_audio_init(void)
 	acdb_register_ops(&acdb);
 #endif
 
-	gpio_request(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_SPK_SD), "AUD_SPK_EN");
-	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_SPK_SD), 1);
-	gpio_set_value(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_SPK_SD), 0);
-	gpio_request(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_CODEC_EN), "aud_2v85_en");
-	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(PRIMOU_AUD_CODEC_EN), 1);
-	gpio_set_value(PRIMOU_AUD_CODEC_EN, 0);
+	gpio_request(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), "AUD_SPK_EN");
+	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 1);
+	gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 0);
+	gpio_request(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), "aud_2v85_en");
+	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), 1);
+	gpio_set_value(SAGA_AUD_CODEC_EN, 0);
 
-	primou_hs_n1v8_enable(0);
+	saga_hs_n1v8_enable(0);
 
 	mutex_lock(&bt_sco_lock);
 	config_gpio_table(aux_pcm_gpio_off, ARRAY_SIZE(aux_pcm_gpio_off));
-	gpio_set_value(PRIMOU_GPIO_BT_PCM_OUT, 0);
-	gpio_set_value(PRIMOU_GPIO_BT_PCM_SYNC, 0);
-	gpio_set_value(PRIMOU_GPIO_BT_PCM_CLK, 0);
+	gpio_set_value(SAGA_GPIO_BT_PCM_OUT, 0);
+	gpio_set_value(SAGA_GPIO_BT_PCM_SYNC, 0);
+	gpio_set_value(SAGA_GPIO_BT_PCM_CLK, 0);
 	mutex_unlock(&bt_sco_lock);
 
 	audio_wq = create_workqueue("AUDIO_EFFECT_VOLUME");

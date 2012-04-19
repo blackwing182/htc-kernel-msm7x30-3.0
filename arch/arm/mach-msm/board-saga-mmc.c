@@ -1,4 +1,4 @@
-/* linux/arch/arm/mach-msm/board-primou-mmc.c
+/* linux/arch/arm/mach-msm/board-saga-mmc.c
  *
  * Copyright (C) 2008 HTC Corporation.
  *
@@ -32,10 +32,10 @@
 #include <asm/mach/mmc.h>
 
 #include "devices.h"
-#include "board-primou.h"
+#include "board-saga.h"
 #include "proc_comm.h"
 
-/*#define PRIMOU_SDMC_CD_N_TO_SYS PM8058_GPIO_PM_TO_SYS(PRIMOU_GPIO_SDMC_CD_N)*/
+/*#define SAGA_SDMC_CD_N_TO_SYS PM8058_GPIO_PM_TO_SYS(SAGA_GPIO_SDMC_CD_N)*/
 
 #if 0
 /* ---- SDCARD ---- */
@@ -75,7 +75,7 @@ static uint32_t movinand_on_gpio_table[] = {
 };
 
 #if 0
-static int __init primou_disablesdcard_setup(char *str)
+static int __init saga_disablesdcard_setup(char *str)
 {
 	/* int cal = simple_strtol(str, NULL, 0); */
 
@@ -83,7 +83,7 @@ static int __init primou_disablesdcard_setup(char *str)
 	return 1;
 }
 
-static int __init primou_disablesdcard_setup(char *str)
+static int __init saga_disablesdcard_setup(char *str)
 {
 	unsigned long cal;
 	if (strict_strtoul(str, 0, &cal) < 0)
@@ -93,7 +93,7 @@ static int __init primou_disablesdcard_setup(char *str)
 	return 1;
 }
 
-__setup("board_primou.disable_sdcard=", primou_disablesdcard_setup);
+__setup("board_saga.disable_sdcard=", saga_disablesdcard_setup);
 
 static struct vreg *vreg_sdslot;	/* SD slot power */
 
@@ -110,7 +110,7 @@ static struct mmc_vdd_xlat mmc_vdd_table[] = {
 static unsigned int sdslot_vdd = 0xffffffff;
 static unsigned int sdslot_vreg_enabled;
 
-static uint32_t primou_sdslot_switchvdd(struct device *dev, unsigned int vdd)
+static uint32_t saga_sdslot_switchvdd(struct device *dev, unsigned int vdd)
 {
 	int i;
 
@@ -152,32 +152,32 @@ static uint32_t primou_sdslot_switchvdd(struct device *dev, unsigned int vdd)
 	return 0;
 }
 
-static unsigned int primou_sdslot_status(struct device *dev)
+static unsigned int saga_sdslot_status(struct device *dev)
 {
 	unsigned int status;
 
-	status = (unsigned int) gpio_get_value(PRIMOU_SDMC_CD_N_TO_SYS);
+	status = (unsigned int) gpio_get_value(SAGA_SDMC_CD_N_TO_SYS);
 
 	return (!status);
 }
 
-#define PRIMOU_MMC_VDD		(MMC_VDD_28_29 | MMC_VDD_29_30)
+#define SAGA_MMC_VDD		(MMC_VDD_28_29 | MMC_VDD_29_30)
 
-static unsigned int primou_sdslot_type = MMC_TYPE_SD;
+static unsigned int saga_sdslot_type = MMC_TYPE_SD;
 
-static struct mmc_platform_data primou_sdslot_data = {
-	.ocr_mask	= PRIMOU_MMC_VDD,
-	.status_irq	= MSM_GPIO_TO_INT(PRIMOU_SDMC_CD_N_TO_SYS),
-	.status		= primou_sdslot_status,
-	.translate_vdd	= primou_sdslot_switchvdd,
-	.slot_type	= &primou_sdslot_type,
+static struct mmc_platform_data saga_sdslot_data = {
+	.ocr_mask	= SAGA_MMC_VDD,
+	.status_irq	= MSM_GPIO_TO_INT(SAGA_SDMC_CD_N_TO_SYS),
+	.status		= saga_sdslot_status,
+	.translate_vdd	= saga_sdslot_switchvdd,
+	.slot_type	= &saga_sdslot_type,
 	.dat0_gpio	= 63,
 };
 
-static unsigned int primou_emmcslot_type = MMC_TYPE_MMC;
-static struct mmc_platform_data primou_movinand_data = {
-	.ocr_mask	=  PRIMOU_MMC_VDD,
-	.slot_type	= &primou_emmcslot_type,
+static unsigned int saga_emmcslot_type = MMC_TYPE_MMC;
+static struct mmc_platform_data saga_movinand_data = {
+	.ocr_mask	=  SAGA_MMC_VDD,
+	.slot_type	= &saga_emmcslot_type,
 	.mmc_bus_width  = MMC_CAP_8_BIT_DATA,
 };
 #endif
@@ -220,7 +220,7 @@ static void config_gpio_table(uint32_t *table, int len)
 /* BCM4329 returns wrong sdio_vsn(1) when we read cccr,
  * we use predefined value (sdio_vsn=2) here to initial sdio driver well
  */
-static struct embedded_sdio_data primou_wifi_emb_data = {
+static struct embedded_sdio_data saga_wifi_emb_data = {
 	.cccr	= {
 		.sdio_vsn	= 2,
 		.multi_block	= 1,
@@ -235,7 +235,7 @@ static void (*wifi_status_cb)(int card_present, void *dev_id);
 static void *wifi_status_cb_devid;
 
 static int
-primou_wifi_status_register(void (*callback)(int card_present, void *dev_id),
+saga_wifi_status_register(void (*callback)(int card_present, void *dev_id),
 				void *dev_id)
 {
 	if (wifi_status_cb)
@@ -245,20 +245,20 @@ primou_wifi_status_register(void (*callback)(int card_present, void *dev_id),
 	return 0;
 }
 
-static int primou_wifi_cd;	/* WiFi virtual 'card detect' status */
+static int saga_wifi_cd;	/* WiFi virtual 'card detect' status */
 
-static unsigned int primou_wifi_status(struct device *dev)
+static unsigned int saga_wifi_status(struct device *dev)
 {
-	return primou_wifi_cd;
+	return saga_wifi_cd;
 }
 
-static unsigned int primou_wifislot_type = MMC_TYPE_SDIO_WIFI;
-static struct mmc_platform_data primou_wifi_data = {
+static unsigned int saga_wifislot_type = MMC_TYPE_SDIO_WIFI;
+static struct mmc_platform_data saga_wifi_data = {
 		.ocr_mask               = MMC_VDD_28_29,
-		.status                 = primou_wifi_status,
-		.register_status_notify = primou_wifi_status_register,
-		.embedded_sdio          = &primou_wifi_emb_data,
-		.slot_type	= &primou_wifislot_type,
+		.status                 = saga_wifi_status,
+		.register_status_notify = saga_wifi_status_register,
+		.embedded_sdio          = &saga_wifi_emb_data,
+		.slot_type	= &saga_wifislot_type,
 		.mmc_bus_width  = MMC_CAP_4_BIT_DATA,
 		.msmsdcc_fmin   = 144000,
 		.msmsdcc_fmid   = 24576000,
@@ -268,19 +268,19 @@ static struct mmc_platform_data primou_wifi_data = {
 		.dummy52_required = 1, */
 };
 
-int primou_wifi_set_carddetect(int val)
+int saga_wifi_set_carddetect(int val)
 {
 	printk(KERN_INFO "%s: %d\n", __func__, val);
-	primou_wifi_cd = val;
+	saga_wifi_cd = val;
 	if (wifi_status_cb)
 		wifi_status_cb(val, wifi_status_cb_devid);
 	else
 		printk(KERN_WARNING "%s: Nobody to notify\n", __func__);
 	return 0;
 }
-EXPORT_SYMBOL(primou_wifi_set_carddetect);
+EXPORT_SYMBOL(saga_wifi_set_carddetect);
 
-int primou_wifi_power(int on)
+int saga_wifi_power(int on)
 {
 	printk(KERN_INFO "[WLAN]%s: %d\n", __func__, on);
 
@@ -292,26 +292,26 @@ int primou_wifi_power(int on)
 				ARRAY_SIZE(wifi_off_gpio_table));
 	}
 
-	/* primou_wifi_bt_sleep_clk_ctl(on, ID_WIFI); */
-	gpio_set_value(PRIMOU_GPIO_WIFI_SHUTDOWN_N, on); /* WIFI_SHUTDOWN */
+	/* saga_wifi_bt_sleep_clk_ctl(on, ID_WIFI); */
+	gpio_set_value(SAGA_GPIO_WIFI_SHUTDOWN_N, on); /* WIFI_SHUTDOWN */
 	mdelay(120);
 	return 0;
 }
-EXPORT_SYMBOL(primou_wifi_power);
+EXPORT_SYMBOL(saga_wifi_power);
 
-int primou_wifi_reset(int on)
+int saga_wifi_reset(int on)
 {
 	printk(KERN_INFO "%s: do nothing\n", __func__);
 	return 0;
 }
 
-int __init primou_init_mmc(unsigned int sys_rev)
+int __init saga_init_mmc(unsigned int sys_rev)
 {
 	uint32_t id;
 	wifi_status_cb = NULL;
 	/*sdslot_vreg_enabled = 0;*/
 
-	printk(KERN_INFO "primou: %s\n", __func__);
+	printk(KERN_INFO "saga: %s\n", __func__);
 	/* SDC2: MoviNAND */
 	/*
 	register_msm_irq_mask(INT_SDC2_0);
@@ -320,15 +320,15 @@ int __init primou_init_mmc(unsigned int sys_rev)
 	config_gpio_table(movinand_on_gpio_table,
 			  ARRAY_SIZE(movinand_on_gpio_table));
 #if 0
-	msm_add_sdcc(2, &primou_movinand_data, 0, 0);
+	msm_add_sdcc(2, &saga_movinand_data, 0, 0);
 #endif
 
 	/* initial WIFI_SHUTDOWN# */
-	id = PCOM_GPIO_CFG(PRIMOU_GPIO_WIFI_SHUTDOWN_N, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_2MA),
+	id = PCOM_GPIO_CFG(SAGA_GPIO_WIFI_SHUTDOWN_N, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_2MA),
 	msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &id, 0);
-	gpio_set_value(PRIMOU_GPIO_WIFI_SHUTDOWN_N, 0);
+	gpio_set_value(SAGA_GPIO_WIFI_SHUTDOWN_N, 0);
 
-	msm_add_sdcc(3, &primou_wifi_data);
+	msm_add_sdcc(3, &saga_wifi_data);
 
 #if 0
 	register_msm_irq_mask(INT_SDC4_0);
@@ -337,7 +337,7 @@ int __init primou_init_mmc(unsigned int sys_rev)
 
 #if 0
 	if (opt_disable_sdcard) {
-		printk(KERN_INFO "primou: SD-Card interface disabled\n");
+		printk(KERN_INFO "saga: SD-Card interface disabled\n");
 		goto done;
 	}
 
@@ -345,18 +345,18 @@ int __init primou_init_mmc(unsigned int sys_rev)
 	if (IS_ERR(vreg_sdslot))
 		return PTR_ERR(vreg_sdslot);
 
-	set_irq_wake(MSM_GPIO_TO_INT(PRIMOU_SDMC_CD_N_TO_SYS), 1);
+	set_irq_wake(MSM_GPIO_TO_INT(SAGA_SDMC_CD_N_TO_SYS), 1);
 
-	msm_add_sdcc(4, &primou_sdslot_data,
-			MSM_GPIO_TO_INT(PRIMOU_SDMC_CD_N_TO_SYS),
+	msm_add_sdcc(4, &saga_sdslot_data,
+			MSM_GPIO_TO_INT(SAGA_SDMC_CD_N_TO_SYS),
 			IORESOURCE_IRQ_LOWEDGE | IORESOURCE_IRQ_HIGHEDGE);
 done:
 #endif
 
 	/* reset eMMC for write protection test */
-	gpio_set_value(PRIMOU_GPIO_EMMC_RST, 0);	/* this should not work!!! */
+	gpio_set_value(SAGA_GPIO_EMMC_RST, 0);	/* this should not work!!! */
 	udelay(100);
-	gpio_set_value(PRIMOU_GPIO_EMMC_RST, 1);
+	gpio_set_value(SAGA_GPIO_EMMC_RST, 1);
 
 	return 0;
 }
