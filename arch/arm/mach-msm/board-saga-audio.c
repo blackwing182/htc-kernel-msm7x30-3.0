@@ -16,10 +16,9 @@
 #include <linux/android_pmem.h>
 #include <linux/mfd/pmic8058.h>
 #include <linux/mfd/marimba.h>
-#include <linux/mfd/msm-adie-codec.h>
+//#include <linux/mfd/msm-adie-codec.h>
 #include <linux/delay.h>
 #include <linux/workqueue.h>
-#include <mach/tpa2051d3.h>
 #include <mach/gpio.h>
 #include <mach/pmic.h>
 #include <mach/dal.h>
@@ -30,6 +29,7 @@
 #include <mach/qdsp5v2_2x/voice.h>
 #include <mach/htc_acoustic_7x30.h>
 #include <mach/htc_acdb_7x30.h>
+#include <linux/spi/spi_aic3254.h>
 
 static struct mutex bt_sco_lock;
 static struct workqueue_struct *audio_wq;
@@ -37,11 +37,15 @@ static void audio_work_func(struct work_struct *work);
 static DECLARE_WORK(audio_work, audio_work_func);
 static atomic_t beats_enabled = ATOMIC_INIT(0);
 
+static int curr_rx_mode;
+static atomic_t aic3254_ctl = ATOMIC_INIT(0);
+
 #define BIT_SPEAKER	(1 << 0)
 #define BIT_HEADSET	(1 << 1)
 #define BIT_RECEIVER	(1 << 2)
 #define BIT_FM_SPK	(1 << 3)
 #define BIT_FM_HS	(1 << 4)
+
 #define PMGPIO(x) (x-1)
 #define SAGA_ACDB_SMEM_SIZE        (0xE000)
 #define SAGA_ACDB_RADIO_BUFFER_SIZE (1024 * 3072)
@@ -50,22 +54,22 @@ static struct vreg *vreg_audio_n1v8;
 
 static struct q5v2_hw_info q5v2_audio_hw[Q5V2_HW_COUNT] = {
 	[Q5V2_HW_HANDSET] = {
-		.max_gain[VOC_NB_INDEX] = 600,
-		.min_gain[VOC_NB_INDEX] = -1400,
-		.max_gain[VOC_WB_INDEX] = 600,
-		.min_gain[VOC_WB_INDEX] = -1400,
+		.max_gain[VOC_NB_INDEX] = 200,
+		.min_gain[VOC_NB_INDEX] = -1800,
+		.max_gain[VOC_WB_INDEX] = -200,
+		.min_gain[VOC_WB_INDEX] = -1700,
 	},
 	[Q5V2_HW_HEADSET] = {
-		.max_gain[VOC_NB_INDEX] = 0,
-		.min_gain[VOC_NB_INDEX] = -2000,
-		.max_gain[VOC_WB_INDEX] = 0,
-		.min_gain[VOC_WB_INDEX] = -2000,
+		.max_gain[VOC_NB_INDEX] = 400,
+		.min_gain[VOC_NB_INDEX] = -1600,
+		.max_gain[VOC_WB_INDEX] = 200,
+		.min_gain[VOC_WB_INDEX] = -1800,
 	},
 	[Q5V2_HW_SPEAKER] = {
-		.max_gain[VOC_NB_INDEX] = 600,
-		.min_gain[VOC_NB_INDEX] = -900,
-		.max_gain[VOC_WB_INDEX] = 600,
-		.min_gain[VOC_WB_INDEX] = -900,
+		.max_gain[VOC_NB_INDEX] = -100,
+		.min_gain[VOC_NB_INDEX] = -1600,
+		.max_gain[VOC_WB_INDEX] = -100,
+		.min_gain[VOC_WB_INDEX] = -1600,
 	},
 	[Q5V2_HW_BT_SCO] = {
 		.max_gain[VOC_NB_INDEX] = 0,
@@ -92,26 +96,26 @@ static struct q5v2_hw_info q5v2_audio_hw[Q5V2_HW_COUNT] = {
 		.min_gain[VOC_WB_INDEX] = -500,
 	},
 	[Q5V2_HW_HAC] = {
-		.max_gain[VOC_NB_INDEX] = 100,
-		.min_gain[VOC_NB_INDEX] = -1900,
-		.max_gain[VOC_WB_INDEX] = 100,
-		.min_gain[VOC_WB_INDEX] = -1900,
+		.max_gain[VOC_NB_INDEX] = 1000,
+		.min_gain[VOC_NB_INDEX] = -500,
+		.max_gain[VOC_WB_INDEX] = 1000,
+		.min_gain[VOC_WB_INDEX] = -500,
 	},
 };
 
 static unsigned aux_pcm_gpio_off[] = {
-	GPIO_CFG(138, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_DOUT */
-	GPIO_CFG(139, 0, GPIO_CFG_INPUT,  GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_DIN  */
-	GPIO_CFG(140, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_SYNC */
-	GPIO_CFG(141, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_CLK  */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_OUT, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),	/* PCM_DOUT */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_IN, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),	/* PCM_DIN  */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_SYNC, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),	/* PCM_SYNC */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_CLK, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),	/* PCM_CLK  */
 };
 
 
 static unsigned aux_pcm_gpio_on[] = {
-	GPIO_CFG(138, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),   /* PCM_DOUT */
-	GPIO_CFG(139, 1, GPIO_CFG_INPUT,  GPIO_CFG_NO_PULL, GPIO_CFG_2MA),   /* PCM_DIN  */
-	GPIO_CFG(140, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),   /* PCM_SYNC */
-	GPIO_CFG(141, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),   /* PCM_CLK  */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_OUT, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),	/* PCM_DOUT */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_IN, 1, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),	/* PCM_DIN  */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_SYNC, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),	/* PCM_SYNC */
+	GPIO_CFG(SAGA_GPIO_BT_PCM_CLK, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),	/* PCM_CLK  */
 };
 
 static void config_gpio_table(uint32_t *table, int len)
@@ -171,18 +175,35 @@ void saga_snddev_poweramp_on(int en)
 	pr_aud_info("%s %d\n", __func__, en);
 
 	if (en) {
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 1);
-		mdelay(100);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_EN), 1);
+		mdelay(30);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode |= BIT_SPEAKER;
+		mdelay(5);
 	} else {
-		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 0);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_EN), 0);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode &= ~BIT_SPEAKER;
 	}
 }
 
 void saga_snddev_hsed_pamp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
-}
 
+	if (en) {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_HP_EN), 1);
+		mdelay(30);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode |= BIT_HEADSET;
+		mdelay(5);
+	} else {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_HP_EN), 0);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode &= ~BIT_HEADSET;
+	}
+}
+/*
 void saga_snddev_pre_hsed_pamp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
@@ -193,7 +214,7 @@ void saga_snddev_pre_hsed_pamp_on(int en)
 		saga_hs_n1v8_enable(0);
 	}
 }
-
+*/
 void saga_snddev_hs_spk_pamp_on(int en)
 {
 	saga_snddev_poweramp_on(en);
@@ -223,29 +244,50 @@ void saga_snddev_bt_sco_pamp_on(int en)
 	mutex_unlock(&bt_sco_lock);
 }
 
+/* power up internal/externnal mic shared GPIO */
+void saga_mic_bias_enable(int en, int shift)
+{
+	pr_aud_info("%s: %d\n", __func__, en);
+
+	if (en) {
+		pmic_hsed_enable(PM_HSED_CONTROLLER_1, PM_HSED_ENABLE_ALWAYS);
+	} else {
+		pmic_hsed_enable(PM_HSED_CONTROLLER_1, PM_HSED_ENABLE_OFF);
+	}
+}
+
 void saga_snddev_imic_pamp_on(int en)
 {
 	pr_aud_info("%s: %d\n", __func__, en);
 
 	if (en) {
 		pmic_hsed_enable(PM_HSED_CONTROLLER_0, PM_HSED_ENABLE_ALWAYS);
-		mdelay(60);
+		pmic_hsed_enable(PM_HSED_CONTROLLER_2, PM_HSED_ENABLE_ALWAYS);
 	} else {
 		pmic_hsed_enable(PM_HSED_CONTROLLER_0, PM_HSED_ENABLE_OFF);
+		pmic_hsed_enable(PM_HSED_CONTROLLER_2, PM_HSED_ENABLE_OFF);
 	}
 }
 
 void saga_snddev_emic_pamp_on(int en)
 {
 	pr_aud_info("%s %d\n", __func__, en);
-#if 0
-	if (en)
-		gpio_request(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), "aud_2v85_en");
-		gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), 1);
-		gpio_set_value(SAGA_AUD_CODEC_EN, 1);
-	else
-		gpio_set_value(SAGA_AUD_CODEC_EN, 0);
-#endif
+	if (en) {
+		/* change MICSELECT to pmic gpio 10 after XB */
+		if (system_rev > 0)
+			gpio_set_value(
+				PM8058_GPIO_PM_TO_SYS(SAGA_AUD_MICPATH_SEL_XB)
+				, 1);
+		else
+			gpio_set_value(SAGA_AUD_MICPATH_SEL_XA, 1);
+	} else {
+		if (system_rev > 0)
+			gpio_set_value(
+				PM8058_GPIO_PM_TO_SYS(SAGA_AUD_MICPATH_SEL_XB)
+				, 1);
+		else
+			gpio_set_value(SAGA_AUD_MICPATH_SEL_XA, 0);
+	}
 }
 
 int saga_get_rx_vol(uint8_t hw, int network, int level)
@@ -261,17 +303,6 @@ int saga_get_rx_vol(uint8_t hw, int network, int level)
 	return vol;
 }
 
-void saga_mic_bias_enable(int en, int shift)
-{
-	pr_aud_info("%s: %d\n", __func__, en);
-
-	if (en) {
-		gpio_set_value(SAGA_AUD_CODEC_EN, 1);
-	} else {
-		gpio_set_value(SAGA_AUD_CODEC_EN, 0);
-	}
-}
-
 uint32_t saga_get_smem_size(void)
 {
 	return SAGA_ACDB_SMEM_SIZE;
@@ -284,7 +315,7 @@ uint32_t saga_get_acdb_radio_buffer_size(void)
 
 int saga_support_aic3254(void)
 {
-	return 0;
+	return 1;
 }
 
 int saga_support_adie(void)
@@ -294,59 +325,22 @@ int saga_support_adie(void)
 
 int saga_support_back_mic(void)
 {
-	return 0;
-}
-
-
-int saga_support_beats(void)
-{
 	return 1;
 }
 
-static void audio_work_func(struct work_struct *work)
+void saga_get_acoustic_tables(struct acoustic_tables *tb)
 {
-	int en = atomic_read(&beats_enabled);
-	int gain;
-
-	pr_aud_info("%s: %d\n", __func__, en);
-
-	if (en) {
-		for (gain = 0x10; gain >= 0x4; gain -= 0x4) {
-			adie_codec_set_device_analog_volume(NULL, 2, gain);
-			if (gain > 0x4)
-				mdelay(50);
-		}
-	} else {
-		for (gain = 0x08; gain <= 0x14; gain += 0x4) {
-			adie_codec_set_device_analog_volume(NULL, 2, gain);
-			if (gain < 0x14)
-				mdelay(30);
-		}
+	switch (system_rev) {
+	case 0:
+		strcpy(tb->aic3254, "AIC3254_REG_DualMic.csv");
+		break;
+	case 1:
+		strcpy(tb->aic3254, "AIC3254_REG_DualMic_XB.csv");
+		break;
+	default:
+		strcpy(tb->aic3254, "AIC3254_REG_DualMic.txt");
 	}
 }
-
-void saga_enable_beats(int en)
-{
-#if 0
-	pr_aud_info("%s: %d\n", __func__, en);
-	if (!audio_wq) {
-		pr_aud_info("%s: non-wq case\n", __func__);
-		if (en)
-			adie_codec_set_device_analog_volume(NULL, 2, 0x04);
-		else
-			adie_codec_set_device_analog_volume(NULL, 2, 0x14);
-	} else {
-		pr_aud_info("%s: wq case\n", __func__);
-		atomic_set(&beats_enabled, en);
-		queue_work(audio_wq, &audio_work);
-	}
-#endif
-}
-
-static struct q5v2audio_icodec_ops iops = {
-	.support_aic3254 = saga_support_aic3254,
-	.support_adie = saga_support_adie,
-};
 
 static struct acdb_ops acdb = {
 	.get_acdb_radio_buffer_size = saga_get_acdb_radio_buffer_size,
@@ -361,7 +355,12 @@ static struct q5v2audio_analog_ops ops = {
 	.ext_mic_enable = saga_snddev_emic_pamp_on,
 	.fm_headset_enable = saga_snddev_hsed_pamp_on,
 	.fm_speaker_enable = saga_snddev_poweramp_on,
-	.qtr_headset_enable = saga_snddev_pre_hsed_pamp_on
+//	.qtr_headset_enable = saga_snddev_pre_hsed_pamp_on
+};
+
+static struct q5v2audio_icodec_ops iops = {
+	.support_aic3254 = saga_support_aic3254,
+//	.support_adie = saga_support_adie,
 };
 
 static struct q5v2audio_ecodec_ops eops = {
@@ -377,11 +376,40 @@ static struct acoustic_ops acoustic = {
 	.support_aic3254 = saga_support_aic3254,
 	.support_back_mic = saga_support_back_mic,
 	.support_beats = saga_support_beats,
-	.enable_beats = saga_enable_beats
+	.get_acoustic_tables = saga_get_acoustic_tables
+//	.enable_beats = saga_enable_beats
+};
+
+int saga_panel_sleep_in(void)
+{
+	return 0;
+}
+static struct aic3254_ctl_ops cops = {
+	.rx_amp_enable = saga_rx_amp_enable,
+	.panel_sleep_in = saga_panel_sleep_in
 };
 
 void __init saga_audio_init(void)
 {
+	struct pm8058_gpio audio_pwr_28 = {
+		.direction      = PM_GPIO_DIR_OUT,
+		.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
+		.output_value   = 0,
+		.pull           = PM_GPIO_PULL_NO,
+		.out_strength   = PM_GPIO_STRENGTH_HIGH,
+		.function       = PM_GPIO_FUNC_NORMAL,
+		.vin_sel        = 6,
+	};
+
+	struct pm8058_gpio audio_pwr_18 = {
+		.direction      = PM_GPIO_DIR_OUT,
+		.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
+		.output_value   = 0,
+		.pull           = PM_GPIO_PULL_NO,
+		.out_strength   = PM_GPIO_STRENGTH_HIGH,
+		.function       = PM_GPIO_FUNC_NORMAL,
+		.vin_sel        = 4,
+	};
 
 	mutex_init(&bt_sco_lock);
 
@@ -394,25 +422,24 @@ void __init saga_audio_init(void)
 	acdb_register_ops(&acdb);
 #endif
 
-	gpio_request(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), "AUD_SPK_EN");
-	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 1);
-	gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_SD), 0);
-	gpio_request(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), "aud_2v85_en");
-	gpio_direction_output(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_CODEC_EN), 1);
-	gpio_set_value(SAGA_AUD_CODEC_EN, 0);
+	aic3254_register_ctl_ops(&cops);
 
-	saga_hs_n1v8_enable(0);
+	pm8xxx_gpio_config(SAGA_AUD_HP_EN, &audio_pwr_28);
+	pm8xxx_gpio_config(SAGA_AUD_EP_EN, &audio_pwr_28);
+	pm8xxx_gpio_config(SAGA_AUD_SPK_EN, &audio_pwr_28);
+	pm8xxx_gpio_config(SAGA_AUD_MICPATH_SEL_XB, &audio_pwr_28);
+
+	pm8xxx_gpio_config(SAGA_AUD_A3254_RSTz, &audio_pwr_18);
+	mdelay(1);
+	audio_pwr_18.output_value = 1;
+	pm8xxx_gpio_config(SAGA_AUD_A3254_RSTz, &audio_pwr_18);
+	audio_pwr_18.output_value = 0;
 
 	mutex_lock(&bt_sco_lock);
 	config_gpio_table(aux_pcm_gpio_off, ARRAY_SIZE(aux_pcm_gpio_off));
 	gpio_set_value(SAGA_GPIO_BT_PCM_OUT, 0);
 	gpio_set_value(SAGA_GPIO_BT_PCM_SYNC, 0);
 	gpio_set_value(SAGA_GPIO_BT_PCM_CLK, 0);
+	gpio_set_value(36, 1);
 	mutex_unlock(&bt_sco_lock);
-
-	audio_wq = create_workqueue("AUDIO_EFFECT_VOLUME");
-	if (audio_wq == NULL) {
-		pr_aud_info("%s: cannot create workqueue\n", __func__);
-	}
-
 }
