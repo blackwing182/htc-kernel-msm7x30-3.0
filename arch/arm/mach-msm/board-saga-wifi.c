@@ -29,8 +29,6 @@ int saga_wifi_get_mac_addr(unsigned char *buf);
 
 #define WLAN_SKB_BUF_NUM	16
 
-/*#define HW_OOB 1*/
-
 static struct sk_buff *wlan_static_skb[WLAN_SKB_BUF_NUM];
 
 typedef struct wifi_mem_prealloc_struct {
@@ -79,11 +77,7 @@ static struct resource saga_wifi_resources[] = {
 		.name		= "bcm4329_wlan_irq",
 		.start		= MSM_GPIO_TO_INT(SAGA_GPIO_WIFI_IRQ),
 		.end		= MSM_GPIO_TO_INT(SAGA_GPIO_WIFI_IRQ),
-#ifdef HW_OOB
 		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL | IORESOURCE_IRQ_SHAREABLE,
-#else
-		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
-#endif
 	},
 };
 
@@ -263,13 +257,11 @@ int __init saga_wifi_init(void)
 	int ret;
 
 	printk(KERN_INFO "%s: start\n", __func__);
-#ifdef HW_OOB
 	strip_nvs_param("sd_oobonly");
-#else
-	saga_wifi_update_nvs("sd_oobonly=1\n");
-#endif
+//	saga_wifi_update_nvs("sd_oobonly=1\n");
 	saga_wifi_update_nvs("btc_params80=0\n");
 	saga_wifi_update_nvs("btc_params6=30\n");
+	saga_wifi_update_nvs("btc_params70=0x32\n");
 	saga_init_wifi_mem();
 	ret = platform_device_register(&saga_wifi_device);
 	return ret;
