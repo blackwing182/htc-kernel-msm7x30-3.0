@@ -24,7 +24,7 @@
 #include "board-saga.h"
 
 static struct rfkill *bt_rfk;
-static const char bt_name[] = "bcm4330";
+static const char bt_name[] = "bcm4329";
 
 /* bt on configuration */
 static uint32_t saga_bt_on_table[] = {
