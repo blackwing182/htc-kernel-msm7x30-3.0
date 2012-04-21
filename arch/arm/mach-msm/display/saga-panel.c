@@ -39,7 +39,7 @@
 static struct vreg *V_LCMIO_1V8;
 static struct vreg *V_LCMIO_2V8;
 
-static struct clk *axi_clk;
+//static struct clk *axi_clk;
 
 #define PWM_USER_DEF	 	142
 #define PWM_USER_MIN		30
@@ -51,6 +51,22 @@ static struct clk *axi_clk;
 #define PWM_HITACHI_MAX		255
 
 #define DEFAULT_BRIGHTNESS      PWM_USER_DEF
+
+struct vreg *vreg_ldo19, *vreg_ldo20;
+struct mddi_cmd {
+        unsigned char cmd;
+        unsigned delay;
+        unsigned char *vals;
+        unsigned len;
+};
+
+#define LCM_CMD(_cmd, _delay, ...)                              \
+{                                                               \
+        .cmd = _cmd,                                            \
+        .delay = _delay,                                        \
+        .vals = (u8 []){__VA_ARGS__},                           \
+        .len = sizeof((u8 []){__VA_ARGS__}) / sizeof(u8)        \
+}
 
 static struct renesas_t {
 	struct led_classdev lcd_backlight;
@@ -276,7 +292,7 @@ saga_get_brightness(struct led_classdev *led_cdev)
 }
 
 static void
-saga_backlight_switch(int on)
+saga_backlight_switch(struct msm_mddi_client_data *client_data, int on)
 {
 	enum led_brightness val;
 
@@ -1271,7 +1287,7 @@ int __init saga_init_panel(void)
 
 		rc = platform_driver_register(&saga_backlight_driver);
 		if (rc)
-	}		return rc;
-
+			return rc;
+	}
 	return 0;
 }
