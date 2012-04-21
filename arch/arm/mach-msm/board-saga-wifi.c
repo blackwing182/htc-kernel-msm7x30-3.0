@@ -130,7 +130,6 @@ static unsigned saga_wifi_update_nvs(char *str)
 	return 0;
 }
 
-#ifdef HW_OOB
 static unsigned strip_nvs_param(char *param)
 {
 	unsigned char *nvs_data;
@@ -180,7 +179,6 @@ static unsigned strip_nvs_param(char *param)
 	}
 	return 0;
 }
-#endif
 
 #define WIFI_MAC_PARAM_STR     "macaddr="
 #define WIFI_MAX_MAC_LEN       17 /* XX:XX:XX:XX:XX:XX */
