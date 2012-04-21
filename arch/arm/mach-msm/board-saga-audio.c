@@ -32,11 +32,6 @@
 #include <linux/spi/spi_aic3254.h>
 
 static struct mutex bt_sco_lock;
-static struct workqueue_struct *audio_wq;
-static void audio_work_func(struct work_struct *work);
-static DECLARE_WORK(audio_work, audio_work_func);
-static atomic_t beats_enabled = ATOMIC_INIT(0);
-
 static int curr_rx_mode;
 static atomic_t aic3254_ctl = ATOMIC_INIT(0);
 
@@ -221,6 +216,21 @@ void saga_snddev_hs_spk_pamp_on(int en)
 	saga_snddev_hsed_pamp_on(en);
 }
 
+void saga_snddev_receiver_pamp_on(int en)
+{
+	pr_aud_info("%s %d\n", __func__, en);
+	if (en) {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_EP_EN), 1);
+		mdelay(5);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode |= BIT_RECEIVER;
+	} else {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_EP_EN), 0);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode &= ~BIT_RECEIVER;
+	}
+}
+
 void saga_snddev_bt_sco_pamp_on(int en)
 {
 	static int bt_sco_refcount;
@@ -290,6 +300,34 @@ void saga_snddev_emic_pamp_on(int en)
 	}
 }
 
+void saga_snddev_fmspk_pamp_on(int en)
+{
+	if (en) {
+		msleep(30);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_EN), 1);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode |= BIT_FM_SPK;
+	} else {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_SPK_EN), 0);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode &= ~BIT_FM_SPK;
+	}
+}
+
+void saga_snddev_fmhs_pamp_on(int en)
+{
+	if (en) {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_HP_EN), 1);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode |= BIT_FM_HS;
+		mdelay(5);
+	} else {
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(SAGA_AUD_HP_EN), 0);
+		if (!atomic_read(&aic3254_ctl))
+			curr_rx_mode &= ~BIT_FM_HS;
+	}
+}
+
 int saga_get_rx_vol(uint8_t hw, int network, int level)
 {
 	struct q5v2_hw_info *info;
@@ -301,6 +339,26 @@ int saga_get_rx_vol(uint8_t hw, int network, int level)
 	vol = minv + ((maxv - minv) * level) / 100;
 	pr_aud_info("%s(%d, %d, %d) => %d\n", __func__, hw, network, level, vol);
 	return vol;
+}
+
+void saga_rx_amp_enable(int en)
+{
+	if (curr_rx_mode != 0) {
+		atomic_set(&aic3254_ctl, 1);
+		pr_aud_info("%s: curr_rx_mode 0x%x, en %d\n",
+			__func__, curr_rx_mode, en);
+		if (curr_rx_mode & BIT_SPEAKER)
+			saga_snddev_poweramp_on(en);
+		if (curr_rx_mode & BIT_HEADSET)
+			saga_snddev_hsed_pamp_on(en);
+		if (curr_rx_mode & BIT_RECEIVER)
+			saga_snddev_receiver_pamp_on(en);
+		if (curr_rx_mode & BIT_FM_SPK)
+			saga_snddev_fmspk_pamp_on(en);
+		if (curr_rx_mode & BIT_FM_HS)
+			saga_snddev_fmhs_pamp_on(en);
+		atomic_set(&aic3254_ctl, 0);
+	}
 }
 
 uint32_t saga_get_smem_size(void)
@@ -375,7 +433,7 @@ static struct acoustic_ops acoustic = {
 	.enable_mic_bias = saga_mic_bias_enable,
 	.support_aic3254 = saga_support_aic3254,
 	.support_back_mic = saga_support_back_mic,
-	.support_beats = saga_support_beats,
+//	.support_beats = saga_support_beats,
 	.get_acoustic_tables = saga_get_acoustic_tables
 //	.enable_beats = saga_enable_beats
 };
@@ -391,7 +449,7 @@ static struct aic3254_ctl_ops cops = {
 
 void __init saga_audio_init(void)
 {
-	struct pm8058_gpio audio_pwr_28 = {
+	struct pm_gpio audio_pwr_28 = {
 		.direction      = PM_GPIO_DIR_OUT,
 		.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
 		.output_value   = 0,
@@ -401,7 +459,7 @@ void __init saga_audio_init(void)
 		.vin_sel        = 6,
 	};
 
-	struct pm8058_gpio audio_pwr_18 = {
+	struct pm_gpio audio_pwr_18 = {
 		.direction      = PM_GPIO_DIR_OUT,
 		.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
 		.output_value   = 0,
