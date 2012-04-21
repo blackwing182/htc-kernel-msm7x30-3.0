@@ -35,11 +35,13 @@
 #include "board-saga.h"
 #include "proc_comm.h"
 
+#define SAGA_SDMC_CD_N_SYS	PM8058_GPIO_PM_TO_SYS(SAGA_SDMC_CD_N)
+
 #define DEBUG_SDSLOT_VDD 0
 
-extern int msm_add_sdcc(unsigned int controller, struct mmc_platform_data *plat,
+/*extern int msm_add_sdcc(unsigned int controller, struct mmc_platform_data *plat,
 			unsigned int stat_irq, unsigned long stat_irq_flags);
-
+*/
 /* ---- COMMON ---- */
 static void config_gpio_table(uint32_t *table, int len)
 {
@@ -54,24 +56,37 @@ static void config_gpio_table(uint32_t *table, int len)
 /* ---- SDCARD ---- */
 
 static uint32_t sdcard_on_gpio_table[] = {
-	PCOM_GPIO_CFG(62, 2, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* CLK */
-	PCOM_GPIO_CFG(63, 2, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* CMD */
-	PCOM_GPIO_CFG(64, 2, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* DAT3 */
-	PCOM_GPIO_CFG(65, 2, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* DAT2 */
-	PCOM_GPIO_CFG(66, 2, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT1 */
-	PCOM_GPIO_CFG(67, 2, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT0 */
+	PCOM_GPIO_CFG(58, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_16MA), /* CLK */
+	PCOM_GPIO_CFG(59, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* CMD */
+	PCOM_GPIO_CFG(60, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* DAT3 */
+	PCOM_GPIO_CFG(61, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* DAT2 */
+	PCOM_GPIO_CFG(62, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* DAT1 */
+	PCOM_GPIO_CFG(63, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* DAT0 */
 };
 
 static uint32_t sdcard_off_gpio_table[] = {
-	PCOM_GPIO_CFG(62, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CLK */
-	PCOM_GPIO_CFG(63, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CMD */
-	PCOM_GPIO_CFG(64, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT3 */
-	PCOM_GPIO_CFG(65, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT2 */
-	PCOM_GPIO_CFG(66, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT1 */
-	PCOM_GPIO_CFG(67, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT0 */
+	PCOM_GPIO_CFG(58, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CLK */
+	PCOM_GPIO_CFG(59, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CMD */
+	PCOM_GPIO_CFG(60, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT3 */
+	PCOM_GPIO_CFG(61, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT2 */
+	PCOM_GPIO_CFG(62, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT1 */
+	PCOM_GPIO_CFG(63, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT0 */
 };
 
 static uint opt_disable_sdcard;
+
+static uint32_t movinand_on_gpio_table[] = {
+	PCOM_GPIO_CFG(64, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* CLK */
+	PCOM_GPIO_CFG(65, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* CMD */
+	PCOM_GPIO_CFG(66, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT3 */
+	PCOM_GPIO_CFG(67, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT2 */
+	PCOM_GPIO_CFG(68, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT1 */
+	PCOM_GPIO_CFG(69, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT0 */
+	PCOM_GPIO_CFG(115, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT4 */
+	PCOM_GPIO_CFG(114, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT5 */
+	PCOM_GPIO_CFG(113, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT6 */
+	PCOM_GPIO_CFG(112, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* DAT7 */
+};
 
 static int __init saga_disablesdcard_setup(char *str)
 {
@@ -165,41 +180,50 @@ static unsigned int saga_sdslot_status(struct device *dev)
 {
 	unsigned int status;
 
-	status = (unsigned int) gpio_get_value(SAGA_GPIO_SDMC_CD_N);
+	status = (unsigned int) gpio_get_value(SAGA_SDMC_CD_N_SYS);
 	return !status;
 }
 
-#define SAGA_MMC_VDD (MMC_VDD_165_195 | MMC_VDD_20_21 | MMC_VDD_21_22 \
-			| MMC_VDD_22_23 | MMC_VDD_23_24 | MMC_VDD_24_25 \
-			| MMC_VDD_25_26 | MMC_VDD_26_27 | MMC_VDD_27_28 \
-			| MMC_VDD_28_29 | MMC_VDD_29_30)
+#define SAGA_MMC_VDD		(MMC_VDD_28_29 | MMC_VDD_29_30)
+
+static unsigned int saga_sdslot_type = MMC_TYPE_SD;
 
 static struct mmc_platform_data saga_sdslot_data = {
 	.ocr_mask	= SAGA_MMC_VDD,
+	.status_irq	= MSM_GPIO_TO_INT(SAGA_SDMC_CD_N_SYS),
 	.status		= saga_sdslot_status,
 	.translate_vdd	= saga_sdslot_switchvdd,
+	.slot_type	= &saga_sdslot_type,
+	.dat0_gpio	= 69,
+};
+
+static unsigned int saga_emmcslot_type = MMC_TYPE_MMC;
+static struct mmc_platform_data saga_movinand_data = {
+	.ocr_mask	= SAGA_MMC_VDD,
+	.slot_type	= &saga_emmcslot_type,
+	.mmc_bus_width  = MMC_CAP_8_BIT_DATA,
 };
 
 /* ---- WIFI ---- */
 
 static uint32_t wifi_on_gpio_table[] = {
-	PCOM_GPIO_CFG(51, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT3 */
-	PCOM_GPIO_CFG(52, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT2 */
-	PCOM_GPIO_CFG(53, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT1 */
-	PCOM_GPIO_CFG(54, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT0 */
-	PCOM_GPIO_CFG(55, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* CMD */
-	PCOM_GPIO_CFG(56, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* CLK */
-	PCOM_GPIO_CFG(29, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_4MA),  /* WLAN IRQ */
+	PCOM_GPIO_CFG(116, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT3 */
+	PCOM_GPIO_CFG(117, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT2 */
+	PCOM_GPIO_CFG(118, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT1 */
+	PCOM_GPIO_CFG(119, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT0 */
+	PCOM_GPIO_CFG(111, 1, GPIO_OUTPUT, GPIO_PULL_UP, GPIO_8MA), /* CMD */
+	PCOM_GPIO_CFG(110, 1, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_8MA), /* CLK */
+	PCOM_GPIO_CFG(147, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_4MA), /* WLAN IRQ */
 };
 
 static uint32_t wifi_off_gpio_table[] = {
-	PCOM_GPIO_CFG(51, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT3 */
-	PCOM_GPIO_CFG(52, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT2 */
-	PCOM_GPIO_CFG(53, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT1 */
-	PCOM_GPIO_CFG(54, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* DAT0 */
-	PCOM_GPIO_CFG(55, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CMD */
-	PCOM_GPIO_CFG(56, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CLK */
-	PCOM_GPIO_CFG(29, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA),  /* WLAN IRQ */
+	PCOM_GPIO_CFG(116, 0, GPIO_INPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT3 */
+	PCOM_GPIO_CFG(117, 0, GPIO_INPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT2 */
+	PCOM_GPIO_CFG(118, 0, GPIO_INPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT1 */
+	PCOM_GPIO_CFG(119, 0, GPIO_INPUT, GPIO_PULL_UP, GPIO_4MA), /* DAT0 */
+	PCOM_GPIO_CFG(111, 0, GPIO_INPUT, GPIO_PULL_UP, GPIO_4MA), /* CMD */
+	PCOM_GPIO_CFG(110, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* CLK */
+	PCOM_GPIO_CFG(147, 0, GPIO_OUTPUT, GPIO_NO_PULL, GPIO_4MA), /* WLAN IRQ */
 };
 
 static struct vreg *vreg_wifi_osc;	/* WIFI 32khz oscilator */
@@ -264,38 +288,96 @@ EXPORT_SYMBOL(saga_wifi_set_carddetect);
 int saga_wifi_power_state=0;
 int saga_bt_power_state=0;
 
+static struct pm_gpio pmic_gpio_sleep_clk_output = {
+	.direction      = PM_GPIO_DIR_OUT,
+	.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
+	.output_value   = 0,
+	.pull           = PM_GPIO_PULL_NO,
+	.vin_sel        = PM8058_GPIO_VIN_S3,      /* S3 1.8 V */
+	.out_strength   = PM_GPIO_STRENGTH_HIGH,
+	.function       = PM_GPIO_FUNC_2,
+};
+
+static DEFINE_SPINLOCK(saga_w_b_slock);
+int saga_sleep_clk_state_wifi = CLK_OFF;
+int saga_sleep_clk_state_bt = CLK_OFF;
+
+int saga_wifi_bt_sleep_clk_ctl(int on, int id)
+{
+	int err = 0;
+	unsigned long flags;
+
+	printk(KERN_DEBUG "%s ON=%d, ID=%d\n", __func__, on, id);
+
+	spin_lock_irqsave(&saga_w_b_slock, flags);
+	if (on) {
+		if ((CLK_OFF == saga_sleep_clk_state_wifi)
+			&& (CLK_OFF == saga_sleep_clk_state_bt)) {
+			printk(KERN_DEBUG "EN SLEEP CLK\n");
+			pmic_gpio_sleep_clk_output.function = PM_GPIO_FUNC_2;
+			err = pm8xxx_gpio_config(SAGA_WIFI_SLOW_CLK,
+					&pmic_gpio_sleep_clk_output);
+			if (err) {
+				spin_unlock_irqrestore(&saga_w_b_slock,
+							flags);
+				printk(KERN_ERR "ERR EN SLEEP CLK, ERR=%d\n",
+					err);
+				return err;
+			}
+		}
+
+		if (id == ID_BT)
+			saga_sleep_clk_state_bt = CLK_ON;
+		else
+			saga_sleep_clk_state_wifi = CLK_ON;
+	} else {
+		if (((id == ID_BT) && (CLK_OFF == saga_sleep_clk_state_wifi))
+			|| ((id == ID_WIFI)
+			&& (CLK_OFF == saga_sleep_clk_state_bt))) {
+			printk(KERN_DEBUG "DIS SLEEP CLK\n");
+			pmic_gpio_sleep_clk_output.function =
+						PM_GPIO_FUNC_NORMAL;
+			err = pm8xxx_gpio_config(
+					SAGA_WIFI_SLOW_CLK,
+					&pmic_gpio_sleep_clk_output);
+			if (err) {
+				spin_unlock_irqrestore(&saga_w_b_slock,
+							flags);
+				printk(KERN_ERR "ERR DIS SLEEP CLK, ERR=%d\n",
+					err);
+				return err;
+			}
+		} else {
+			printk(KERN_DEBUG "KEEP SLEEP CLK ALIVE\n");
+		}
+
+		if (id)
+			saga_sleep_clk_state_bt = CLK_OFF;
+		else
+			saga_sleep_clk_state_wifi = CLK_OFF;
+	}
+	spin_unlock_irqrestore(&saga_w_b_slock, flags);
+
+	return 0;
+}
+EXPORT_SYMBOL(saga_wifi_bt_sleep_clk_ctl);
+
 int saga_wifi_power(int on)
 {
-	int rc;
-
 	printk(KERN_DEBUG "%s: %d\n", __func__, on);
 
 	if (on) {
 		config_gpio_table(wifi_on_gpio_table,
 				  ARRAY_SIZE(wifi_on_gpio_table));
-		rc = vreg_enable(vreg_wifi_osc);
-		if (rc)
-			return rc;
-		htc_pwrsink_set(PWRSINK_WIFI, 70);
 	} else {
 		config_gpio_table(wifi_off_gpio_table,
 				  ARRAY_SIZE(wifi_off_gpio_table));
-		htc_pwrsink_set(PWRSINK_WIFI, 0);
 	}
-	gpio_set_value(SAGA_GPIO_MAC_32K_EN, on);
-	mdelay(100);
-	gpio_set_value(SAGA_GPIO_WIFI_EN, on);
-	mdelay(100);
-	if (!on) {
-		if(!saga_bt_power_state)
-		{
-		vreg_disable(vreg_wifi_osc);
-			printk("WiFi disable vreg_wifi_osc.\n");
-		}
-		else
-			printk("WiFi shouldn't disable vreg_wifi_osc. BT is using it!!\n");
-	}
-	saga_wifi_power_state = on;
+
+	saga_wifi_bt_sleep_clk_ctl(on, ID_WIFI);
+	gpio_set_value(SAGA_GPIO_WIFI_SHUTDOWN_N, on); /* WIFI_SHUTDOWN */
+
+	mdelay(120);
 	return 0;
 }
 #ifndef CONFIG_WIFI_CONTROL_FUNC
@@ -333,10 +415,7 @@ EXPORT_SYMBOL(saga_bt_fastclock_power);
 static int saga_wifi_reset_state;
 void saga_wifi_reset(int on)
 {
-	printk(KERN_DEBUG "%s: %d\n", __func__, on);
-	gpio_set_value(SAGA_GPIO_WIFI_PA_RESETX, !on);
-	saga_wifi_reset_state = on;
-	mdelay(50);
+	printk(KERN_INFO "%s: do nothing\n", __func__);
 }
 #ifndef CONFIG_WIFI_CONTROL_FUNC
 EXPORT_SYMBOL(saga_wifi_reset);
@@ -351,26 +430,41 @@ static struct mmc_platform_data saga_wifi_data = {
 
 int __init saga_init_mmc(unsigned int sys_rev)
 {
+	uint32_t id;
 	wifi_status_cb = NULL;
-
 	sdslot_vreg_enabled = 0;
 
-	vreg_sdslot = vreg_get(0, "gp6");
+	printk(KERN_INFO "saga: %s\n", __func__);
+	/* SDC2: MoviNAND */
+//	register_msm_irq_mask(INT_SDC2_0);
+//	register_msm_irq_mask(INT_SDC2_1);
+	config_gpio_table(movinand_on_gpio_table,
+			  ARRAY_SIZE(movinand_on_gpio_table));
+	msm_add_sdcc(2, &saga_movinand_data);
+
+	/* initial WIFI_SHUTDOWN# */
+	id = PCOM_GPIO_CFG(SAGA_GPIO_WIFI_SHUTDOWN_N, 0, GPIO_OUTPUT,
+		GPIO_NO_PULL, GPIO_2MA),
+	msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &id, 0);
+	gpio_set_value(SAGA_GPIO_WIFI_SHUTDOWN_N, 0);
+
+	msm_add_sdcc(3, &saga_wifi_data);
+
+//	register_msm_irq_mask(INT_SDC4_0);
+//	register_msm_irq_mask(INT_SDC4_1);
+	/* SDCC4: SD card */
+	if (opt_disable_sdcard) {
+		printk(KERN_INFO "saga: SD-Card interface disabled\n");
+		return 0;
+	}
+
+	vreg_sdslot = vreg_get(0, "gp10");
 	if (IS_ERR(vreg_sdslot))
 		return PTR_ERR(vreg_sdslot);
-	vreg_wifi_osc = vreg_get(0, "mmc");
-	if (IS_ERR(vreg_wifi_osc))
-		return PTR_ERR(vreg_wifi_osc);
 
-	set_irq_wake(SAGA_GPIO_TO_INT(SAGA_GPIO_SDMC_CD_N), 1);
+	irq_set_irq_wake(MSM_GPIO_TO_INT(SAGA_SDMC_CD_N_SYS), 1);
 
-	msm_add_sdcc(1, &saga_wifi_data, 0, 0);
-
-	if (!opt_disable_sdcard)
-		msm_add_sdcc(2, &saga_sdslot_data,
-			     SAGA_GPIO_TO_INT(SAGA_GPIO_SDMC_CD_N), 0);
-	else
-		printk(KERN_INFO "saga: SD-Card interface disabled\n");
+	msm_add_sdcc(4, &saga_sdslot_data);
 	return 0;
 }
 
@@ -458,9 +552,6 @@ DEFINE_SIMPLE_ATTRIBUTE(sagammc_dbg_sd_cd_fops,
 static int __init sagammc_dbg_init(void)
 {
 	struct dentry *dent;
-
-	if (!machine_is_saga())
-		return 0;
 
 	dent = debugfs_create_dir("sagammc_dbg", 0);
 	if (IS_ERR(dent))
